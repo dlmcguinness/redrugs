@@ -1,0 +1,4 @@
+
+      [paste.filter_app_factory]
+      tm = repoze.tm:make_tm
+      

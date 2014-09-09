@@ -1,0 +1,30 @@
+Metadata-Version: 1.1
+Name: stevedore
+Version: 0.15
+Summary: Manage dynamic plugins for Python applications
+Home-page: https://github.com/dreamhost/stevedore
+Author: Doug Hellmann
+Author-email: doug.hellmann@dreamhost.com
+License: UNKNOWN
+Description: stevedore
+        =========
+        
+        Manage dynamic plugins for Python applications
+        
+        * Free software: Apache license
+        * Documentation: http://stevedore.readthedocs.org
+        * Source: http://git.openstack.org/cgit/openstack/stevedore
+        * Bugs: https://bugs.launchpad.net/python-stevedore
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Intended Audience :: Developers
+Classifier: Environment :: Console

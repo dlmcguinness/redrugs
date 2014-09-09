@@ -1,0 +1,17 @@
+
+    [paste.paster_command]
+    controller = pylons.commands:ControllerCommand
+    restcontroller = pylons.commands:RestControllerCommand
+    routes = pylons.commands:RoutesCommand
+    shell = pylons.commands:ShellCommand
+
+    [paste.paster_create_template]
+    pylons = pylons.util:PylonsTemplate
+    pylons_minimal = pylons.util:MinimalPylonsTemplate
+
+    [paste.filter_factory]
+    debugger = pylons.middleware:debugger_filter_factory
+
+    [paste.filter_app_factory]
+    debugger = pylons.middleware:debugger_filter_app_factory
+    
