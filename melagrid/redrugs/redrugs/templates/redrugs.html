@@ -1,0 +1,246 @@
+<html data-ng-app="redrugsApp" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="../javascript/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://sadi.googlecode.com/svn/trunk/javascript/sadi.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script type="text/javascript" src="../javascript/cytoscape.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <script type="text/javascript" src="../javascript/arbor.js"></script>
+    <script type="text/javascript" src="../javascript/redrugs.js"></script>
+    <script type="text/javascript" src="../javascript/osc.js"></script>
+    <!--<script type="text/javascript" src="http://127.0.0.1:8081/socket.io/socket.io.js"></script>-->
+
+    <link type="text/css" rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" />
+    <link type="text/css" rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" />
+
+<head>
+  <title>Repurposing Drugs with Semantics</title>
+</head>
+
+<body data-ng-controller="ReDrugSCtrl">
+  <div id="starting-box" class="opaque centered-box">
+    <h1>Repurposing Drugs with Semantics</h1>
+    <form class="form-horizontal" data-ng-submit="addToGraph(searchTerms)">
+      <div>
+        <input class="searchBox input-xlarge" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease. Ex. Topiramate" />
+        <input class="btn search-btn" type="submit" value="Search" />
+      </div>
+    </form>
+    <div class="help"><i class="fa fa-question-circle fa-lg"></i> Help
+      <ul class="help-info centered-box">
+        <li>This web application is intended to help discover new possible purposes for existing FDA approved drugs by searching either a specific drug, disease, or gene and exploring interactions made by these entities.</li>
+        <li>Please contact us if you have any questions or issues at something@rpi.edu</li>
+      </ul>
+    </div> 
+  </div>
+
+  <div id="interface" class="hidden">
+    <div id="search-box" class="opaque">
+      <button id="min-search" class="btn btn-small"><i class="fa fa-chevron-circle-left"></i></button>
+      <div id="max-search">
+        <h2>Repurposing Drugs with Semantics</h2>
+        <form class="form-horizontal" data-ng-submit="addToGraph(searchTerms)">
+          <div>
+            <input class="searchBox" data-ng-model="searchTerms" type="text"/>
+            <button class="btn search-btn">Search</button>
+            <input class="btn" type="submit" value="Add" />
+            <img id="loader" data-ng-show="loading" src="../img/loader.gif"/>
+          </div>
+        </form>
+        <div id="btns">
+          <!-- <button id="legend-open" class="btn btn-small" type="button"><i class="fa fa-th-large"></i> Legend</button> -->
+          <a href="#legend-box" role="button" class="btn btn-small" data-toggle="modal"><i class="fa fa-th-large"></i> Legend</a>
+          <div class="btn-group">
+            <button id="zoom-in" class="btn btn-small"><i class="fa fa-search-plus"></i></button>
+            <button id="zoom-fit" class="btn btn-small"><i class="fa fa-search"></i></button>
+            <button id="zoom-out" class="btn btn-small"><i class="fa fa-search-minus"></i></button>
+          </div>
+          <a href="#options-box" role="button" class="btn btn-small" data-toggle="modal"><i class="fa fa-sliders"></i> Options</a>
+          <a href="#help-box" role="button" class="btn btn-small" data-toggle="modal"><i class="fa fa-question"></i> Help</a>
+        </div>
+        <div class="alert found" data-ng-show="!loading &amp;&amp; loaded != null">Found {{loaded}} connections.</div>
+        <div class="alert not-found" data-ng-show="!loading &amp;&amp; error">Server Error. Sorry about that, please try again later.</div>
+      </div>
+    </div>
+
+    <div id="edge-info" class="hidden"></div>
+    <div id="button-box" class="hidden opaque">
+      <div class="btn-group">
+        <button id="upstream" data-ng-click="getUpstream(getSelected('uri'))" type="button" class="btn">
+          <i class="fa fa-backward"/><span id="upstream-hover">Find Upstream Connections</span>
+        </button>
+        <button id="details" data-ng-click="getDetails(getSelected('details'))" type="button" class="btn">
+          <i class="fa fa-external-link"></i><span id="details-hover">Get Details</span>
+        </button>
+        <button id="bfs" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn">
+          <i class="icon-eye-open"></i><span id="bfs-hover">Highlight Connections</span>
+        </button>
+        <button id="twoStep" data-ng-click="getTwoStep(getSelected('uri'))" type="button" class="btn">
+          <i class="icon-tasks"></i><span id="twoStep-hover">Find Nearby Disease Connections</span>
+        </button>
+        <button id="downstream" data-ng-click="getDownstream(getSelected('uri'))" type="button" class="btn">
+          <i class="fa fa-forward"/><span id="downstream-hover">Find Downstream Connections</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="warning" class="hidden" title="Warning">
+      <p>This search will find all diseases within <input type="text" name="numSearch" id="numSearch" value="1" /> intermediary node's distance but may take several minutes to complete.</p>
+      <p>Do you wish to continue?</p>
+    </div>
+  </div>
+
+  <div id="results"></div>
+
+  <div id="legend-box" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="legend" aria-hidden="true">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h2 id="legend-lbl">Legend</h2>
+    </div>
+    <div class="modal-body">
+      <h3>Nodes</h3>
+      <ul class="nodes-legend">
+        <li><div class="activator square"></div><span>Activator</span></li>
+        <li><div class="inhibitor square fa fa-star fa-2x"></div><span>Inhibitor</span></li>
+        <li><div class="protein square"></div><span>Protein</span></li>
+        <li><div class="disease square"></div><span>Disease</span></li>
+        <li><div class="other square"></div><span>Undefined</span></li>
+      </ul>
+      <h3>Edges</h3>
+      <ul class="edges-legend">
+        <li><div id="type1" class="line"></div><div id="type1s"></div><span>
+          <a href="#">Activation</a>
+          <!-- <a href="http://purl.obolibrary.org/obo/CHEBI_48705">Agonist</a>, 
+          <a href="http://purl.obolibrary.org/obo/CHEBI_23357">Cofactor</a>, 
+          <a href="http://purl.obolibrary.org/obo/CHEBI_25212">Metabolite</a>, or 
+          <a href="http://cellfinder.org/ontology?id=GO_0048018">Receptor Agonist Activity</a> -->
+        </span></li>
+        <li><div id="type2" class="line"></div><div id="type2s"></div><span>
+          <a href="#">Inhibition</a>
+          <!-- <a href="http://purl.obolibrary.org/obo/CHEBI_48706">Antagonist</a> or 
+          <a href="http://cellfinder.org/ontology?id=GO_0030547">Receptor Inhibitor Activity</a> -->
+        </span></li>
+        <li><div id="type3" class="line"></div><div id="type3s"></div><span>
+          <a href="http://purl.obolibrary.org/obo/MI_0915">Physical Association</a>, 
+          <a href="http://purl.obolibrary.org/obo/MI_0191">Aggregation</a>, or 
+          <a href="http://purl.obolibrary.org/obo/MI_0403">Colocalization</a>
+        </span></li>
+        <li><div id="type4" class="line"></div><div id="type4s"></div><span>
+          <a href="http://purl.obolibrary.org/obo/MI_0217">Phosphorylation Reaction</a>
+        </span></li>
+        <li><div id="type5" class="line"></div><div id="type5s"></div><span>
+          <a href="http://purl.obolibrary.org/obo/MI_0570">Protein Cleavage</a> or 
+          <a href="http://purl.obolibrary.org/obo/MI_0194">Cleavage Reaction</a>
+        </span></li>
+        <li><div id="type6" class="line longer"></div><span>
+          <a href="#">Interaction</a>
+          <!-- a href="http://purl.obolibrary.org/obo/MI_0190">Molecule Connection</a>, 
+          <a href="http://purl.obolibrary.org/obo/CHEBI_35224">Effector</a>, 
+          <a href="http://purl.obolibrary.org/obo/MI_0407">Direct Interaction</a>, or 
+          <a href="http://purl.obolibrary.org/obo/MI_0914">Association</a>
+          <a href="#">Interaction with Disease</a> -->
+        </span></li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+  </div>
+
+  <div id="options-box" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="options" aria-hidden="true">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h2 id="options-lbl">Options</h2>
+    </div>
+    <div class="modal-body">
+      <form id="layout" class="form-horizontal" data-ng-submit="cy.layout(layout)">
+        <h3>Layout</h3>
+        <input type="radio" class="radio inline" name="optArbor" id="optArbor" value="arbor" checked="checked" data-ng-model="layout.name"/> Arbor
+        <input type="radio" class="radio inline" name="optCircle" id="optCircle" value="circle" data-ng-model="layout.name"/> Circle
+        <input type="radio" class="radio inline" name="optCose" id="optCose" value="cose" data-ng-model="layout.name"/> Cose
+        <input type="radio" class="radio inline" name="optBF" id="optBF" value="breadthfirst" data-ng-model="layout.name"/> Breadth First
+        <input type="radio" class="radio inline" name="optRandom" id="optRandom" value="random" data-ng-model="layout.name"/> Random
+        <input id="layout-btn" class="btn btn-small" type="submit" value="Change"/>
+      </form>
+      <div class="inline-options">
+        <h3 class="inline-h3">Labels:</h3>
+        <div class="btn-group inline-btns" data-toggle="buttons-radio">
+          <button id="show-lbl" type="button" class="btn btn-small">Show</button>
+          <button id="hide-lbl" type="button" class="btn btn-small">Hide</button>
+        </div>
+      </div>
+      <div class="inline-options">
+        <h3 class="inline-h3">Background:</h3>
+        <div class="btn-group inline-btns" data-toggle="buttons-radio">
+          <button id="bg-dark" type="button" class="btn btn-small">Dark</button>
+          <button id="bg-light" type="button" class="btn btn-small">Light</button>
+        </div>
+      </div>
+      
+      <form id="filter-edges" data-ng-submit="filter(edgesFilter)">
+        <h3 class="buffer-top">Filter Edges</h3>
+        <label class="checkbox">
+          <input type="checkbox" name="triangle" data-ng-model="edgesFilter.triangle"/> Activation
+          <!-- Agonist, Cofactor, Metabolite, or Receptor Agonist Activity -->
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="tee" data-ng-model="edgesFilter.tee" /> Inhibition
+          <!-- Antagonist or Receptor Inhibitor Activity -->
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="circle" data-ng-model="edgesFilter.circle"/> Physical Association, Aggregation or Colocalization
+        </label>
+        <label class="checkbox">
+           <input type="checkbox" name="diamond" data-ng-model="edgesFilter.diamond"/> Phosphorylation Reaction
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="square" data-ng-model="edgesFilter.square"/> Protein Cleavage or Cleavage Reaction
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="none" data-ng-model="edgesFilter.none"/> Interaction
+          <!-- Molecule Connection, Effector, Direct Interaction, Association, or Interaction with Disease -->
+        </label>
+        <input id="filter-btn" class="btn btn-small" type="submit" value="Filter"/>
+      </form>
+    </div>
+    <div class="modal-footer"></div>
+  </div>
+
+  <div id="help-box" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="options" aria-hidden="true">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h2 id="help-lbl">Help</h2>
+    </div>
+    <div class="modal-body">
+      <h3>How To Use</h3>
+      <ul>
+        <li>Click, drag, and scroll to move around the graph.</li>
+        <li>Double-click to select a node or edge to discover more information.</li>
+        <li>To unselect edges and/or nodes, double-click on the background.</li>
+      </ul>
+      <h3>About</h3>
+      <p>This system visually represents the probability and likelihood that a link between drugs, proteins, or entire biological processes exists.</p>
+      <p>This probability is determined using nanopublications, ontology, and a reasoner. Multiple nanopublications are given a combined probability based off of their method of experimentation and their source of publication.</p>
+      <p>The thickness of the lines is based on the likelihood of the interactions while the style of the lines reflects one of three thresholds of probability which can be seen in the legend.</p>
+      <p>For more information, please refer to the <a href="http://tw.rpi.edu/media/2014/03/07/97dd/poster.pdf">online paper</a>.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+  </div>
+
+  <div id="edgeTable" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="options" aria-hidden="true">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h2 id="interactions-lbl">Interactions</h2>
+    </div>
+    <div class="modal-body">
+    </div>
+  </div>
+<!--   <button id="first-bfs" class="btn btn-small hidden">First BFS</button> -->
+</body>
+</html>

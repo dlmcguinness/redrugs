@@ -1,0 +1,355 @@
+body {
+  font: 14px helvetica neue, helvetica, arial, sans-serif;
+  background:url("../img/congruent_outline.png");
+}
+html, body, .container {
+  width: 100%;
+  height: 100%;
+}
+h1 {
+  font-weight: normal;
+  text-align: center;
+  font-size: 32px;
+  padding-top: 0.5em;
+}
+h2, h3, h4 { padding: 0; }
+h2 { font-size: 24px; }
+h3 {
+  font-size: 14px;
+  margin: 0 0 0.5em 0;
+  border-bottom: 1px solid #CCC;
+  display: block;
+}
+h4 {
+  font-size: 14px;
+  margin: 0;
+}
+ol, ul { list-style: none; }
+li { padding-bottom: 0.5em; }
+form { margin: 5px 0; }
+hr { margin: 3px 0; }
+a { text-decoration: none; }
+
+
+.hidden { visibility: hidden; }
+.searchBox { padding: 0.3em; }
+.radio { position: relative; top: -2px; }
+.opaque { background-color: rgba(0,0,0,0.5) !important; }
+.ui-autocomplete {
+  max-height: 100px;
+  max-width: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 
+ * Initial page search-box 
+ */
+.centered-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  border-radius: 10px;
+  padding: 1em;
+  z-index: 100;
+  text-align: center;
+  height: 200px;
+  width: 400px;
+  margin-top: -100px;
+  margin-left: -200px;
+}
+#centered-box .dropdown-menu {
+  width: 57%;
+}
+.modal-body {
+  padding: 0 15px 15px 15px;
+}
+.help {
+  cursor: pointer;
+  position: absolute;
+  padding: 10px;
+  bottom: 0.5em;
+  right: 0.5em;
+  text-align: left;
+}
+.help-info {
+  z-index: 120;
+  background-color: white;
+  text-align: left;
+  color: black;
+  display: none;
+}
+
+/* 
+ * Top left search-box 
+ */
+#interface {
+  position: absolute;
+  z-index: 10;
+}
+#min-search {
+  float: left;
+  margin: 6px 6px 10px 0;
+}
+#search-box {
+  position: fixed;
+  top: 1em;
+  left: 1em;
+  z-index: 15;
+  padding: 1em 1em 0 1em;
+  width: 355px;
+  border-radius: 10px;
+}
+#search-box, #starting-box { color: white; }
+#max-search h2 {
+  font-weight: normal;
+  font-size: 18px;
+  margin: 0;
+  padding: 0 2px 0 43px;
+  text-align: left;
+}
+#loader {
+  width: 20px;
+  float: right;
+  position: relative;
+  top: 16px;
+  margin-right: 7px;
+}
+#btns { margin: 1em 0 1.5em 0; }
+.found {
+  background-color: #FFFFFF;
+  color: #2C9378;
+  border-color: #2C9378;
+  text-shadow: 0px #FFFFFF;
+}
+.not-found {
+  background-color: #000000;
+  border-color: #FD0140;
+  color: #FD0140;
+  text-shadow: 0px #000000;
+}
+
+/* 
+ * Legend
+ */
+.nodes-legend { height: 65px; }
+.nodes-legend li {
+  display: inline-block;
+  padding-right: 30px;
+}
+.edges-legend { overflow-y: auto; }
+.line, .square {
+  display: inline-block;
+  margin-right: 10px;
+  position: relative;
+  top: 5px;
+}
+.activator {
+  width: 0; 
+  height: 0; 
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 24px solid #FFD700;
+}
+.inhibitor { color: #C71585; }
+.protein, .disease { 
+  height: 22px; 
+  width: 22px;
+}
+.protein { background-color: #FFA500; }
+.disease {
+  background-color: #112B49;
+  border-radius: 5px;
+}
+.other {
+  background-color: #FF7F50;
+  height: 25px;
+  width: 25px;
+  border-radius: 50px;
+}
+#style1 {
+  border-bottom: #BABABA solid 5px;
+} #style2 {
+  border-bottom: #BABABA dashed 5px;
+} #style3 {
+  border-bottom: #BABABA dotted 5px;
+}
+.line {
+  width: 75px;
+  position: relative;
+  top: -1px;
+}
+.longer {
+  width: 80px;
+  margin-right: 15px;
+}
+#type1 {
+  border-bottom: #9AFE2E solid 5px;
+} #type2 {
+  border-bottom: #C71585 solid 5px;
+} #type3 {
+  border-bottom: #00FFFF solid 5px;
+} #type4 {
+  border-bottom: #9800FF solid 5px;
+} #type5 {
+  border-bottom: #A0A0A0 solid 5px;
+} #type6 {
+  border-bottom: #FF0040 solid 5px;
+}
+#type1s, #type2s, #type3s, #type4s, #type5s {
+  position: relative;
+  display: inline-block;
+}
+#type1s {
+  width: 0px;
+  height: 0px;
+  border-left: 10px solid #9AFE2E;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  left: -15px;
+  top: 3px;
+}
+#type2s {
+  height: 15px;
+  width: 6px;
+  background-color: #C71585;
+  left: -15px;
+  top: 3px;
+  margin-right: 5px;
+}
+#type3s, #type4s, #type5s {
+  width: 10px;
+  height: 10px;
+}
+#type3s {
+  border-radius: 10px;
+  left: -15px;
+  top: 2px;
+  background: #00FFFF;
+}
+#type4s { 
+  background: #9800FF;
+  margin: 3px 10px 0 -11px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+  top: 4px;
+}
+#type5s {
+  background: #A0A0A0;
+  top: 1px;
+  left: -16px;
+}
+
+/*
+ * Options
+ */
+.inline-options {
+  display: inline-block;
+  margin-top: 1em;
+  margin-right: 50px;
+}
+.inline-h3 {
+  float: left;
+  margin-right: 0.5em;
+  border: #FFF;
+}
+.inline-btns { margin-top: 5px; }
+#layout-btn, #filter-btn { float: right; }
+#filter-edges input { display: inline-block; }
+.buffer-top { margin-top: 10px; }
+
+/* 
+ * Selected node options
+ */
+#button-box { 
+  position: relative; 
+  padding: 10px;
+  border-radius: 10px;
+}
+#details-hover, #bfs-hover, #upstream-hover, #downstream-hover, #twoStep-hover { 
+  display: none; 
+  background-color: black;
+  color: white;
+  position: absolute;
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 250;
+  top: -52;
+}
+#details-hover:before, #bfs-hover:before, #upstream-hover:before, #downstream-hover:before, #twoStep-hover:before {
+   content:"";
+   position: absolute;
+   width: 0;
+   height: 0;
+   border-top: 16px solid black;
+   border-left: 4px solid transparent; 
+   border-right: 10px solid transparent; 
+}
+#details-hover, #bfs-hover, #upstream-hover, #downstream-hover, #twoStep-hover { left: -21px; top: -56px; }
+#details-hover:before, #bfs-hover:before, #upstream-hover:before, #downstream-hover:before, #twoStep-hover:before { margin: 22px 0px 0px 28px; }
+
+/* 
+ * Warning
+ */
+.ui-widget-content { border: 0px; }
+.ui-widget-header {
+  background: #FFFFFF;
+  color: #FD0140;
+  font-size: 16px;
+  border: 0px;
+  border-bottom: 1px solid #CCC;
+}
+.ui-dialog .ui-dialog-title { margin: 0.5em 0 0.1em 0px; }
+.ui-dialog-content { font-size: 14px; }
+.ui-dialog .ui-dialog-buttonpane {
+  border-width: 0px;
+  margin-top: 0px;
+}
+.ui-dialog .ui-dialog-buttonpane button { font-size: 14px !important; }
+#numSearch { 
+  width: 20px; 
+  padding: 0 0 0 3px;
+  margin: 0;
+}
+
+/* 
+ * Edge hover information
+ */
+#edge-info {
+  padding: 10px;
+  min-width: 200px;
+  z-index: 250;
+  background: rgba(0,0,0,0.8);
+  position: absolute;
+  border-radius: 10px;
+  left: 200px;
+  color: white;
+}
+#edge-info:before {
+  content:"";
+  position: absolute;
+  width: 0; 
+  height: 0;
+  border-right: 0px solid transparent;
+  border-top: 21px solid rgba(0,0,0,0.8);
+  border-left: 18px solid transparent;
+  margin: 6px 0px 0px -28px;
+}
+#edge-info p, #edge-info ul { padding: 0; margin: 0; }
+#edge-info li { padding: 0 0 0 1em; }
+#edge-info a { color: #2C9378; text-decoration: none; }
+#edge-style span { margin-right: 25px; }
+
+#results {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  cursor: pointer;
+}
+
+#first-bfs {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+

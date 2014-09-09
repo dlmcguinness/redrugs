@@ -1,0 +1,20 @@
+
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+prefix go: <http://purl.obolibrary.org/obo/GO_>
+
+SELECT ?participant ?target ?interactionType ?typeLabel
+?participantName { 
+
+  [] sio:has-participant ?participant;
+     sio:has-target ?target;
+     a ?interactionType.
+  ?interactionType rdfs:label ?typeLabel.
+  ?participant rdfs:label ?participantName.
+
+  graph ?assertion {
+    ?interaction sio:has-participant ?target.
+    ?interaction sio:has-target ?secondaryTarget.
+  }
+  go:0030307 sio:has-participant ?secondaryTarget.
+} LIMIT 10000

@@ -1,0 +1,121 @@
+<?python
+  import rdflib, collections
+  DC = rdflib.Namespace("http://purl.org/dc/terms/")
+  def getType(o):
+      if type(o) == rdflib.Literal:
+          return "literal"
+      else:
+          return "resource"
+  def literalize(o):
+      result = o.label()
+      if result == None or len(result) == 0:
+          try:
+              result = o.qname()
+          except:
+              pass
+      if result == None or len(result) == 0:
+          result = str(graph.identifier)
+      return result
+  def getBackrefs(resource):
+      result = collections.defaultdict(list)
+      i = 0
+      for subject, predicate in graph.subject_predicates(resource.identifier):
+          result[predicate].append(subject)
+          i += 1
+          if i >= 50:
+              break
+      return result
+  backrefs = getBackrefs(resource)
+  ?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <title>${resource.label()}</title>
+</head>
+
+<body>
+<script>
+$(function() {
+  
+  $('span.linkout .icon-share').hide();
+  $('span.linkout')
+      .mouseover(function(){
+          console.log(this,$(".icon-share",this));
+          $(".icon-share",this).stop().fadeIn();
+      })
+      .mouseout(function() {
+          $(".icon-share",this).delay(500).fadeOut();
+      });
+});
+</script>
+  <span class="linkout" py:def="displayUri(ref)">
+    <a href="${mount}?uri=${ref.identifier}">${literalize(ref)}</a>
+    <a href="${ref.identifier}"><i class="icon-share"/></a>
+  </span>
+  <h1>${displayUri(resource)}</h1>
+  <div class="row">
+    <div class="span6">
+        <div py:if="resource.value(DC['description']) != None">
+          <h2>Description</h2>
+          ${resource.value(DC['description'])}
+        </div>
+        <div py:if="len([x for x in resource.objects(rdflib.RDFS['comment'])]) > 0">
+          <h2>Comments</h2>
+          <div class="well well-small" py:for="o in resource.objects(rdflib.RDFS['comment'])">
+             ${o.value}
+          </div>
+        </div>
+        <h2>Referenced By:</h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Resource</th>
+            </tr>
+          </thead>
+          <tbody>
+            <py:for each="p in sorted(backrefs.keys())">
+            <tr>
+                <td>via ${displayUri(graph.resource(p))}</td>
+                <td>
+                  <div py:for="o in backrefs[p]" >${displayUri(graph.resource(o))}</div>
+                </td>
+            </tr>
+            </py:for>
+          </tbody>
+        </table>
+    </div>
+    <div class="span6">
+      <h2>References and Attributes:</h2>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <py:for each="p in sorted(set(resource.predicates()))">
+            <tr>
+                <td>${displayUri(p)}</td>
+                <td>
+                  <div py:for="o in resource.objects(p.identifier)" >
+                    <py:choose test="getType(o)">
+                      <py:when test="'literal'">${o.value}</py:when>
+                      <py:when test="'resource'">${displayUri(o)}</py:when>
+                      <py:otherwise></py:otherwise>
+                    </py:choose>
+                  </div>
+                </td>
+            </tr>
+            </py:for>
+          </tbody>
+        </table>
+    </div>
+  </div>
+</body>
+</html>

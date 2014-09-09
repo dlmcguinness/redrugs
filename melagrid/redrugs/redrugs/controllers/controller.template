@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""Sample controller module"""
+
+# turbogears imports
+from tg import expose
+
+#from tg import redirect, validate, flash
+#from tg.i18n import ugettext as _
+#from tg import predicates
+
+# project specific imports
+from redrugs.lib.base import BaseController
+#from redrugs.model import DBSession, metadata
+
+
+class SampleController(BaseController):
+    
+    @expose('redrugs.templates.index')
+    def index(self):
+        return dict(page='index')

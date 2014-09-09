@@ -1,0 +1,29 @@
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+construct {
+  ?nanopub a ?nanopubType;
+     <http://semanticscience.org/resource/SIO_000008>  [
+       a <http://semanticscience.org/resource/SIO_000765>;
+       <http://semanticscience.org/resource/SIO_000300> ?probability;
+     ]. 
+} where {
+  ?nanopub prov:wasGeneratedBy ?activity.
+  ?activity a prov:Activity, ?type.
+  ?nanopubType owl:equivalentClass [
+        a owl:Restriction ;
+	owl:someValuesFrom ?type;
+        owl:onProperty prov:wasGeneratedBy;
+    ];
+    rdfs:subClassOf [
+     rdfs:subClassOf [
+      a owl:Restriction;
+      owl:onProperty <http://semanticscience.org/resource/SIO_000008>;
+      owl:onClass [
+        a owl:Class;
+        owl:intersectionOf ( <http://semanticscience.org/resource/SIO_000765> [ a owl:Restriction;
+                                        owl:onProperty <http://semanticscience.org/resource/SIO_000300>;
+                                        owl:hasValue ?probability; ]);
+      ];
+    ];
+  ].
+}

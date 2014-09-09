@@ -1,0 +1,33 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      py:strip="">
+<head py:match="head" py:attrs="select('@*')">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="${response.charset}" />
+  <title py:if="False">Your generic title goes here</title>
+  <meta py:replace="select('*')"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
+</head>
+
+<body py:match="body" py:attrs="select('@*')">
+  <div class="container">
+
+    <!-- Flash messages -->
+    <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+      <div class="row"><div class="span8 offset2">
+        <div py:if="flash" py:replace="Markup(flash)" />
+      </div></div>
+    </py:with>
+
+    <!-- Main included content -->
+    <div py:replace="select('*|text()')"/>
+
+    <!-- Footer included from an external template -->
+    <footer class="footer hidden-tablet hidden-phone">
+    </footer>
+  </div>
+</body>
+</html>

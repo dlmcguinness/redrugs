@@ -1,0 +1,4 @@
+recursive-include redrugs/public *
+include redrugs/public/favicon.ico
+recursive-include redrugs/i18n *
+recursive-include redrugs/templates *
