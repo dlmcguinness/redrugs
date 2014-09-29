@@ -306,11 +306,13 @@ a { text-decoration: none; }
   margin-top: 0px;
 }
 .ui-dialog .ui-dialog-buttonpane button { font-size: 14px !important; }
-#numSearch { 
-  width: 20px; 
+
+#numSearch, #numProb {
   padding: 0 0 0 3px;
   margin: 0;
 }
+#numSearch { width: 20px; }
+#numProb { width: 30px; }
 
 /* 
  * Edge hover information

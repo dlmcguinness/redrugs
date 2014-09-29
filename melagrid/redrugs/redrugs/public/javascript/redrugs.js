@@ -185,6 +185,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     $("#button-box").css("left", pos.x-105);
                     $("#button-box").css("top", pos.y-90);
                     $("#button-box").removeClass('hidden');
+
+                    $('#edge-info').addClass('hidden');
                     // socket.send((pos.x).toFixed(2));
                     // socket.send((pos.y).toFixed(2));
 
@@ -551,6 +553,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             node.data.color = $scope.getColor(node.data.types);
             node.data.linecolor = "#FFFF00";
             node.data.textlinecolor = $scope.getTextlineColor(node.data.types);
+            node.data.prob = 1;
         }
         return node;
     };
@@ -631,17 +634,33 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         // Populated with [source, target, edge] of non-disease edge interactions
         var notDiseaseEle = [];
 
+        var probOfConnection = function(source) {
+            var prev = $scope.currStep - 1;
+            if (prev < 0) { return 1; }
+            // Looking at all targets
+            for (j = 1; j < $scope.prevEle[prev].length; j++) {
+                if (source === $scope.prevEle[prev][j].data.id) {
+                    return $scope.prevEle[prev][j].data.prob;
+                }
+            }
+        };
+
         // Split elements in graph to disease or non-disease. Assumes all diseases are targets.
         for (i = 1; i < elements.length; i+=3) {
-            if (elements[i].data.types['http://semanticscience.org/resource/SIO_010056']) {
-                diseaseEle.push(elements[i-1]);
-                diseaseEle.push(elements[i]);
-                diseaseEle.push(elements[i+1]);
-            }
-            else {
-                notDiseaseEle.push(elements[i-1]);
-                notDiseaseEle.push(elements[i]);
-                notDiseaseEle.push(elements[i+1]);
+            var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
+            console.log(prob);
+            if (prob >= $scope.probThreshold) {
+                elements[i].data.prob = prob;
+                if (elements[i].data.types['http://semanticscience.org/resource/SIO_010056']) {
+                    diseaseEle.push(elements[i-1]);
+                    diseaseEle.push(elements[i]);
+                    diseaseEle.push(elements[i+1]);
+                }
+                else {
+                    notDiseaseEle.push(elements[i-1]);
+                    notDiseaseEle.push(elements[i]);
+                    notDiseaseEle.push(elements[i+1]);
+                }
             }
         }
         // Saves the non-disease for linking further searches
@@ -717,6 +736,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 "Continue": function() {
                     $( this ).dialog( "close" );
                     $scope.numSearch = parseInt($('#numSearch').val(), 10);
+                    $scope.probThreshold = parseFloat($('#numProb').val());
                     $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
                     $scope.currStep = 0;
                     $scope.prevEle = new Array($scope.numSearch + 1);
