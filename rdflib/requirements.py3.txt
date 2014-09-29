@@ -1,5 +1,0 @@
-pyparsing
-flake8
-html5lib
-isodate
-SPARQLWrapper

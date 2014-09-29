@@ -1,4 +1,0 @@
-pyparsing
-flake8
-isodate
-SPARQLWrapper
