@@ -64,19 +64,17 @@ def logLikelihood(p):
 def confidenceVote(nums):
     return (math.tanh(sum([math.atanh(2*x-1) for x in nums])) +1)/2
 
-appendQueryTemplate = NewTextTemplate('''
+downstreamQueryTemplate = NewTextTemplate('''
 PREFIX sio: <http://semanticscience.org/resource/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
 prefix go: <http://purl.org/obo/owl/GO#GO_>
 
 SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
-{% for s in search %}\
-  { let ( ?searchEntity := <${s}>)
-    let ( ${position} := <${s}> ) }
-{% end %}\
-  ?searchEntity rdfs:label ?searchTerm.
+  { let ( ?searchEntity := <${search}>)
+    let ( ?participant := <${search}> ) }
+  <${search}> rdfs:label ?searchTerm.
   graph ?assertion {
-    ?interaction sio:has-participant ?participant.
+    ?interaction sio:has-participant <${search}>.
     ?interaction sio:has-target ?target.
     ?interaction a ?interactionType.
   }
@@ -87,10 +85,39 @@ SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetT
       sio:SIO_000300 ?probability;
     ].
   }
-  OPTIONAL { ?participant a ?participantType. }
+  OPTIONAL { <${search}> a ?participantType. }
   OPTIONAL { ?target a ?targetType. }
   
   ?target rdfs:label ?targetLabel.
+  <${search}> rdfs:label ?participantLabel.
+} LIMIT 10000''')
+
+upstreamQueryTemplate = NewTextTemplate('''
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+prefix go: <http://purl.org/obo/owl/GO#GO_>
+
+SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
+  { let ( ?searchEntity := <${search}>)
+    let ( ?target := <${search}> ) }
+{% end %}\
+  <${search}> rdfs:label ?searchTerm.
+  graph ?assertion {
+    ?interaction sio:has-participant ?participant.
+    ?interaction sio:has-target <${search}>.
+    ?interaction a ?interactionType.
+  }
+  OPTIONAL { ?interactionType rdfs:label ?typeLabel. }
+  OPTIONAL {
+    ?assertion sio:SIO_000008 [
+      a sio:SIO_000765;
+      sio:SIO_000300 ?probability;
+    ].
+  }
+  OPTIONAL { ?participant a ?participantType. }
+  OPTIONAL { <${search}> a ?targetType. }
+  
+  <${search}> rdfs:label ?targetLabel.
   ?participant rdfs:label ?participantLabel.
 } LIMIT 10000''')
 
@@ -102,12 +129,10 @@ prefix go: <http://purl.org/obo/owl/GO#GO_>
 SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?targetType ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
   let ( 
     ?searchEntity :=
-{% for s in search %}\
-    <${s}>
-{% end %}\
+    <${search}>
   )
-  ?searchEntity rdfs:label ?searchTerm.
-  ?searchEntity sio:has-participant ?participant.
+  <${search}> rdfs:label ?searchTerm.
+  <${search}> sio:has-participant ?participant.
   
   graph ?assertion {
     ?interaction sio:has-participant ?participant.
@@ -127,23 +152,6 @@ SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetT
   ?target rdfs:label ?targetLabel.
   ?participant rdfs:label ?participantLabel.
 } LIMIT 10000''')
-
-searchRelations = [
-    '''?target''',
-    '''?participant''',
-#    '''[] sio:has-participant ?target; sio:has-target ?searchEntity.''',
-#    '''[] sio:has-participant ?searchEntity; sio:has-target ?target.''',
-    ]
-searchRelationD = [
-    '''?participant''',
-#    '''[] sio:has-participant ?target; sio:has-target ?searchEntity.''',
-#    '''[] sio:has-participant ?searchEntity; sio:has-target ?target.''',
-    ]
-searchRelationU = [
-    '''?target''',
-#    '''[] sio:has-participant ?target; sio:has-target ?searchEntity.''',
-#    '''[] sio:has-participant ?searchEntity; sio:has-target ?target.''',
-    ]
 
 def mergeByInteraction(edges):
     def mergeInteractions(interactions):
@@ -221,11 +229,11 @@ class InteractionsService(sadi.Service):
     def get_interactions(self,search):
         q = self.create_query(search)
         edges = []
-        #print q
+        print q
         resultSet = model.graph.query(q)
         variables = [x.replace("?","") for x in resultSet.vars]
         edges.extend([dict([(variables[i],x[i]) for i  in range(len(x))]) for x in resultSet])
-        #print len(edges)
+        print len(edges)
         edges = mergeByInteraction(edges)
         edges = mergeByInteractionType(edges)
         return edges
@@ -256,7 +264,7 @@ class FindUpstreamAgentsService(InteractionsService):
     name = "upstream"
 
     def create_query(self,search):
-        q = appendQueryTemplate.generate(Context(search=[search], position="?target")).render() 
+        q = upstreamQueryTemplate.generate(Context(search=search)).render() 
         return q
 
     def getInputClass(self):
@@ -273,7 +281,7 @@ class FindDownstreamTargetsService(InteractionsService):
     name = "downstream"
 
     def create_query(self,search):
-        q = appendQueryTemplate.generate(Context(search=[search], position="?participant")).render() 
+        q = downstreamQueryTemplate.generate(Context(search=search)).render() 
         return q
 
     def getInputClass(self):
