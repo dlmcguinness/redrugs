@@ -1,6 +1,0 @@
-TurboGears2 >= 2.2.2
-Genshi
-repoze.tm2 >= 1.0a5
-tw2.forms
-rdflib
-sadi
