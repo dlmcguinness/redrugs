@@ -30,19 +30,18 @@ testpkgs=['WebTest >= 1.2.3',
                'wsgiref',
                ]
 install_requires=[
-    "TurboGears2 >= 2.2.2",
+    "TurboGears2 >= 2.3.1",
     "Genshi",
 #    "zope.sqlalchemy >= 0.4",
     "repoze.tm2 >= 1.0a5",
 #    "sqlalchemy<0.8b1",
 #    "sqlalchemy-migrate",
-#    "pylons",
-#    "webhelpers",
-#    "gearbox",
-#    "Werkzeug",
+    "pylons",
+    "webhelpers",
+    "gearbox",
+    "Werkzeug",
     "tw2.forms",
     "rdflib",
-
     "sadi",
     ]
 
