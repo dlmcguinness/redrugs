@@ -13,21 +13,19 @@ _*source: [http://tw.rpi.edu/web/project/redrugs](http://tw.rpi.edu/web/project/
 Installation and Setup
 ======================
 
-Install ``redrugs`` using the setup.py script::
+Install ``redrugs`` using the setup.py script. You may need to install scipy manually into your virtualenv, depending on your operating system.
 
 ```
 cd redrugs
 virtualenv venv
 venv/bin/pip install tg.devtools
-source tg2env/bin/activate
+source venv/bin/activate
 python setup.py develop
 pip install -e .
 ```
 
-Create the project database for any model classes defined::
 
-
-Start the gearbox http server::
+Start the gearbox http server:
 
 ```
 gearbox serve

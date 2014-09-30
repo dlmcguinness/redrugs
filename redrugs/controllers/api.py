@@ -147,18 +147,18 @@ searchRelationU = [
 
 def mergeByInteraction(edges):
     def mergeInteractions(interactions):
-        print "start: "
+        #print "start: "
         result = interactions[0]
         result['provenance'] = []
         for i in interactions:
-            print "i: "
-            print i
+            #print "i: "
+            #print i
             if i['probability'] == None:
                 #print i
                 i['probability'] = rdflib.Literal(0.99)     #Drugbank, OMIM
             result['provenance'].append((i['interaction'], i['interactionType'], i['probability']))
         result['probability'] = geomean([i['probability'].value for i in interactions])
-        print "end: "
+        #print "end: "
         return result
     
     byInteraction = collections.defaultdict(list)
@@ -221,11 +221,11 @@ class InteractionsService(sadi.Service):
     def get_interactions(self,search):
         q = self.create_query(search)
         edges = []
-        print q
+        #print q
         resultSet = model.graph.query(q)
         variables = [x.replace("?","") for x in resultSet.vars]
         edges.extend([dict([(variables[i],x[i]) for i  in range(len(x))]) for x in resultSet])
-        print len(edges)
+        #print len(edges)
         edges = mergeByInteraction(edges)
         edges = mergeByInteractionType(edges)
         return edges

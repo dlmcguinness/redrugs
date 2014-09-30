@@ -31,6 +31,7 @@ testpkgs=['WebTest >= 1.2.3',
                ]
 install_requires=[
     "TurboGears2 >= 2.3.1",
+    "pbr",
     "Genshi",
 #    "zope.sqlalchemy >= 0.4",
     "repoze.tm2 >= 1.0a5",
@@ -42,6 +43,8 @@ install_requires=[
     "Werkzeug",
     "tw2.forms",
     "rdflib",
+    "scipy",
+    "numpy",
     "sadi",
     ]
 
