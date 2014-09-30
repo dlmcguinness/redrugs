@@ -229,11 +229,11 @@ class InteractionsService(sadi.Service):
     def get_interactions(self,search):
         q = self.create_query(search)
         edges = []
-        print q
+        #print q
         resultSet = model.graph.query(q)
         variables = [x.replace("?","") for x in resultSet.vars]
         edges.extend([dict([(variables[i],x[i]) for i  in range(len(x))]) for x in resultSet])
-        print len(edges)
+        #print len(edges)
         edges = mergeByInteraction(edges)
         edges = mergeByInteractionType(edges)
         return edges
