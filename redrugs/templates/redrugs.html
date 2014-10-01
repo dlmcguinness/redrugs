@@ -10,6 +10,7 @@
     <script type="text/javascript" src="../javascript/cytoscape.min.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
     <script type="text/javascript" src="../javascript/arbor.js"></script>
+    <script type="text/javascript" src="../javascript/dagre.js"></script>
     <script type="text/javascript" src="../javascript/redrugs.js"></script>
     <script type="text/javascript" src="../javascript/osc.js"></script>
     <!--<script type="text/javascript" src="http://127.0.0.1:8081/socket.io/socket.io.js"></script>-->
@@ -160,7 +161,8 @@
     <div class="modal-body">
       <form id="layout" class="form-horizontal" data-ng-submit="cy.layout(layout)">
         <h3>Layout</h3>
-        <input type="radio" class="radio inline" name="optArbor" id="optArbor" value="arbor" checked="checked" data-ng-model="layout.name"/> Arbor
+        <input type="radio" class="radio inline" name="optDagre" id="optDagre" value="dagre" checked="checked" data-ng-model="layout.name"/> DAGre
+        <input type="radio" class="radio inline" name="optArbor" id="optArbor" value="arbor" data-ng-model="layout.name"/> Arbor
         <input type="radio" class="radio inline" name="optCircle" id="optCircle" value="circle" data-ng-model="layout.name"/> Circle
         <input type="radio" class="radio inline" name="optCose" id="optCose" value="cose" data-ng-model="layout.name"/> Cose
         <input type="radio" class="radio inline" name="optBF" id="optBF" value="breadthfirst" data-ng-model="layout.name"/> Breadth First

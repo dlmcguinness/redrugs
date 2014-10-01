@@ -47,6 +47,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.layout = {
         name: 'arbor',
         liveUpdate: false,
+        circle: true,
+        directed: true,
         maxSimulationTime: 2000,
         padding: [100,100,100,100]
     };
@@ -625,6 +627,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.currStep = 0;
     $scope.prevEle = [];
 
+    $scope.traces = {};
+
     $scope.diseaseToGraph = function(result) {
         // Source, target, edge
         var elements = $scope.getElements(result);
@@ -651,10 +655,15 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             console.log(prob);
             if (prob >= $scope.probThreshold) {
                 elements[i].data.prob = prob;
+                var trace = [elements[i-1]];
+                if ($scope.traces[elements[i-1].data.uri] != null) {
+                    trace = $scope.traces[elements[i-1].data.uri].slice();
+                } 
+                trace.push(elements[i+1]);
+                trace.push(elements[i]);
+                $scope.traces[elements[i].data.uri] = trace;
                 if (elements[i].data.types['http://semanticscience.org/resource/SIO_010056']) {
-                    diseaseEle.push(elements[i-1]);
                     diseaseEle.push(elements[i]);
-                    diseaseEle.push(elements[i+1]);
                 }
                 else {
                     notDiseaseEle.push(elements[i-1]);
@@ -666,37 +675,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         // Saves the non-disease for linking further searches
         $scope.prevEle[$scope.currStep] = notDiseaseEle;
 
+        var resultElements = [];
         // For all diseases found, create chain to original selected node source
-        for (i = 0; i < diseaseEle.length; i+=3) {
-            var source = diseaseEle[i].data.id;
-            var prev = $scope.currStep - 1;
-            if (prev < 0) { break; }    // Doesn't run if it is only the first step
+        diseaseEle.forEach( function(element) {
+            console.log("adding trace",$scope.traces[element.data.uri]);
+            resultElements = resultElements.concat($scope.traces[element.data.uri]);
+        });
 
-            while (source !== $scope.selectedEle && prev >= 0) {    
-                // Check if source is already part of graph
-                var found = false;
-                $scope.cy.nodes().each(function(i, ele){
-                    if (source === ele.data('id')) { found = true; return false; };
-                });
-                if (found) { break; }
-
-                // Otherwise add to diseaseEle
-                else {
-                    // if the target of the previous step list is the source we want to link, add it to diseaseEle
-                    for (j = 1; j < $scope.prevEle[prev].length; j++) {
-                        if (source === $scope.prevEle[prev][j].data.id) {
-                            diseaseEle.push($scope.prevEle[prev][j-1]);
-                            diseaseEle.push($scope.prevEle[prev][j]);
-                            diseaseEle.push($scope.prevEle[prev][j+1]);
-                            source = $scope.prevEle[prev][j-1];
-                        }
-                    }
-                    prev--;
-                }
-            }
-        }
-
-        $scope.$apply(function(){ $scope.cy.add(diseaseEle); });
+        $scope.$apply(function(){ $scope.cy.add(resultElements); });
 
         // If the search is not the last...
         if($scope.currStep < $scope.numSearch) {
@@ -737,6 +723,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     $( this ).dialog( "close" );
                     $scope.numSearch = parseInt($('#numSearch').val(), 10);
                     $scope.probThreshold = parseFloat($('#numProb').val());
+                    $scope.traces = {};
                     $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
                     $scope.currStep = 0;
                     $scope.prevEle = new Array($scope.numSearch + 1);
@@ -829,7 +816,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $('body').css("background", 'url("../img/congruent_outline.png")');
     });
     $("#bg-light").click(function() {
-        $('body').css("background", 'url("../img/dimension.png")');
+        $('body').css("background", 'white');
     });
 
     // First BFS function
