@@ -225,7 +225,7 @@ class InteractionsService(sadi.Service):
         result.add(sadi.dc.creator, rdflib.URIRef('mailto:mccusj@rpi.edu'))
         return result
 
-    @lru
+    #@lru
     def get_interactions(self,search):
         q = self.create_query(search)
         edges = []
@@ -317,7 +317,7 @@ class TextSearchService(sadi.Service):
             answer.add(rdflib.RDFS.label, rdflib.Literal(rdflib.Literal(a[0])))
             answer.add(pml.answers,o.identifier)
 
-    @lru
+    #@lru
     def get_matches(self,search):
         resultSet = model.graph.query('''prefix bd: <http://www.bigdata.com/rdf/search#>
           select distinct ?o ?s  where {{
