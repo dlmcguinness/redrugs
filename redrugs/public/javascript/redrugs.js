@@ -2,31 +2,30 @@ var redrugsApp = angular.module('redrugsApp', []);
 
 redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
 
-    /* OSC code */
-
-    //129.161.106.124 CCC computer
-    // socket = io.connect('http://127.0.0.1', { port: 8081, rememberTransport: false});
-    // console.log('oi');
-    // socket.on('connect', function() {
-    //     // sends to socket.io server the host/port of oscServer and oscClient
-    //     socket.emit('config', {
-    //         server: {
-    //             port: 3333,
-    //             host: '127.0.0.1' 
-    //         },
-    //         client: {
-    //             port: 3334,
-    //             host: '129.161.106.124'
-    //         }
-    //     });
-    // });
-    // socket.on('message', function(obj) {
-    //     var status = document.getElementById("status");
-    //     status.innerHTML = obj[0];
-    //     console.log(obj);
-    // });
-
-    /* End of OSC code */
+    // OSC code & 129.161.106.124 CCC computer
+    /*
+        socket = io.connect('http://127.0.0.1', { port: 8081, rememberTransport: false});
+        console.log('oi');
+        socket.on('connect', function() {
+            // sends to socket.io server the host/port of oscServer and oscClient
+            socket.emit('config', {
+                server: {
+                    port: 3333,
+                    host: '127.0.0.1' 
+                },
+                client: {
+                    port: 3334,
+                    host: '129.161.106.124'
+                }
+            });
+        });
+        socket.on('message', function(obj) {
+            var status = document.getElementById("status");
+            status.innerHTML = obj[0];
+            console.log(obj);
+        });
+    */
+    // End of OSC code
 
     $scope.elements = {
         nodes:[],
@@ -70,10 +69,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     'color':'white',
                     'background-color': 'data(color)',
                     'shape': 'data(shape)',
-                    'text-outline-width': 2,
-                    'text-outline-color': 'data(textlinecolor)',
                     'border-color': 'data(linecolor)',
                     'border-width': 2,
+                    'text-outline-width': 2,
+                    'text-outline-color': '#333333',
                     'height': 'data(size)',
                     'width': 'data(size)',
                     'cursor': 'pointer'
@@ -89,6 +88,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 .selector(':selected')
                 .css({
                     'background-color': '#D8D8D8',
+                    'border-color': '#D8D8D8',
                     'line-color': '#D8D8D8',
                     'target-arrow-color': '#D8D8D8',
                     'source-arrow-color': '#D8D8D8',
@@ -124,40 +124,17 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 $scope.cy = cy = this;
                 cy.boxSelectionEnabled(false);
 
-                // Hides dynamically revealed objects on page
+                // Hides dynamically revealed objects on page on pan, drag, zoom
                 cy.on('drag', function(e) {
-                    $("#button-box").addClass('hidden');
-                    $("#edge-info").addClass('hidden');
+                    $("#button-box, #edge-info").addClass('hidden');
                 });
                 cy.on('pan', function(e) {
-                    $("#button-box").addClass('hidden');
-                    $("#edge-info").addClass('hidden');
+                    $("#button-box, #edge-info").addClass('hidden');
                 });
                 cy.on('zoom', function(e) {
-                    $("#button-box").addClass('hidden');
-                    $("#edge-info").addClass('hidden');
+                    $("#button-box, #edge-info").addClass('hidden');
                 });
-                cy.on('tapdragover', 'node', function(e) {
-                    var node = e.cyTarget;
-                    if (!$scope.showLabel) {
-                        node.removeClass('hideLabel');
-                    }
-                });
-                cy.on('tagdragout', 'node', function(e) {
-                    var node = e.cyTarget;
-                    if (!$scope.showLabel) {
-                        node.addClass('hideLabel');
-                    }
-                });
-                cy.on('free', 'node', function(e) {
-                    var selected = $scope.cy.$('node:selected');
-                    selected.nodes().each(function(i,d) {
-                        var pos = d.renderedPosition();
-                        $("#button-box").css("left", pos.x-105);
-                        $("#button-box").css("top", pos.y-90);
-                        $("#button-box").removeClass('hidden');
-                    });
-                });
+
                 // Double-clicking on whitespace removes all CSS changes
                 cy.on('vclick', function(e){
                     if( e.cyTarget === cy ){
@@ -165,10 +142,34 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         if (!$scope.showLabel) {
                             cy.elements().addClass('hideLabel');
                         }
-                        $("#button-box").addClass('hidden');
-                        $("#edge-info").addClass('hidden');
+                        $("#button-box, #edge-info").addClass('hidden');
                         cy.elements().removeClass("highlighted");
                     }
+                });
+
+                // Shows the label if hovering and labels are hidden
+                cy.on('tapdragover', 'node', function(e) {
+                    if (!$scope.showLabel) {
+                        e.cyTarget.removeClass('hideLabel');
+                    }
+                });
+                cy.on('tagdragout', 'node', function(e) {
+                    if (!$scope.showLabel) {
+                        e.cyTarget.addClass('hideLabel');
+                    }
+                });
+
+                // Repositions the button box if selected node is dragged
+                cy.on('free', 'node', function(e) {
+                    var selected = $scope.cy.$('node:selected');
+                    selected.nodes().each(function(i,d) {
+                        var pos = d.renderedPosition();
+                        $("#button-box").css({
+                            "left": pos.x-105,
+                            "top": pos.y-90
+                        });
+                        $("#button-box").removeClass('hidden');
+                    });
                 });
 
                 // Double-clicking a node...
@@ -184,24 +185,26 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         neighborhood.removeClass('hideLabel');
                     }
                     
-                    $("#button-box").css("left", pos.x-105);
-                    $("#button-box").css("top", pos.y-90);
+                    $("#button-box").css({
+                        "left": pos.x-105,
+                        "top": pos.y-90
+                    });
                     $("#button-box").removeClass('hidden');
 
                     $('#edge-info').addClass('hidden');
                     // socket.send((pos.x).toFixed(2));
                     // socket.send((pos.y).toFixed(2));
-
-                    // console.log(cy.json());
                 });
+
                 // Double-clicking an edge...
                 cy.on('click', 'edge', function(e) {
                     var uris = [];
                     var db = function() {
                         var result = "";
-                        for(var k in uris) { result += "<li>" + k + "</li>"; }
+                        for (var k in uris) { result += "<li>" + k + "</li>"; }
                         return result;
                     };
+                    // Creates the table of provenance information
                     var infolist = function(source) {
                         var table = []
                         for (i = 0; i < source.length; i++) {
@@ -241,10 +244,13 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     var edge = e.cyTarget;
 
                     var table = infolist(edge.data().data);
-                    $("#edge-info").html("<p>Interaction: " + edge.data().types + "</p><p> Probability: " + edge.data().probability + "</p> Z-Score: " + edge.data().zscore + "<ul> Databases Referenced: " + db() + "</ul><p><a href='#edgeTable' role='button' data-toggle='modal'>Click to view all interactions</a></p>"); 
+                    $("#edge-info").html(
+                        "<p>Interaction: " + edge.data().types + "</p><p> Probability: " + edge.data().probability + "</p> Z-Score: " + edge.data().zscore + "<ul> Databases Referenced: " + db() + "</ul><p><a href='#edgeTable' role='button' data-toggle='modal'>Click to view all interactions</a></p>"); 
                     $("#edgeTable .modal-body").html('<table class="table"><thead><tr><th>Database</th><th>Interaction Type</th><th>Probability</th></tr></thead><tbody>' + table + '</tbody></table>');
-                    $("#edge-info").css("left", pos.x+20);
-                    $("#edge-info").css("top", pos.y-10);
+                    $("#edge-info").css({
+                        "left": pos.x+20,
+                        "top": pos.y-10
+                    });
                     $("#edge-info").removeClass('hidden');
                 });
             }
@@ -313,6 +319,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $scope.error = true;
         $scope.loading = false;
     };
+    // Gets the selected nodes
     $scope.getSelected = function(attr) {
         if (!$scope.cy) return [];
         var selected = $scope.cy.$('node:selected');
@@ -325,6 +332,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         var g = new $.Graph();
         query.forEach(function(uri) { window.open(uri); });
     };
+
     // Shows BFS animation starting from selected node
     $scope.showBFS = function(query) {
         var g = new $.Graph();
@@ -344,34 +352,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             highlightNextEle();
         });
     };
-    // Used to filter edge interaction types based on color of edge
-    $scope.filter = function(query) {
-        $scope.cy.edges().each(function(i, ele){
-            ele.addClass("hidden");
-        });
-        if (query.triangle === true) {
-            $scope.cy.elements('edge[color="#9AFE2E"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.tee === true) {
-            $scope.cy.elements('edge[color="#C71585"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.circle === true) {
-            $scope.cy.elements('edge[color="#00FFFF"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.diamond === true) {
-            $scope.cy.elements('edge[color="#FF2600"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.square === true) {
-            $scope.cy.elements('edge[color="#000000"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.none === true) {
-            $scope.cy.elements('edge[color="#FF0040"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.other === true) {
-            $scope.cy.elements('edge[color="#BABABA"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        }
-    };
+
+    /* 
+     * MAPPINGS 
+     */
 
     // Maps edge interaction types to values for Cytoscape visualization
     $scope.edgeTypes = {
@@ -410,23 +394,31 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         "http://purl.obolibrary.org/obo/MI_0570": "square",
         "http://purl.obolibrary.org/obo/MI_0194": "square",
     }
+
+    var triColor = "#FED700";
+    var teeColor = "#BF1578";
+    var cirColor = "#6FCCDD";
+    var diaColor = "#7851A1";
+    var squColor = "#A0A0A0";
+    var noneColor = "#A7CE38";
+    var otherColor = "#FF0040";
+
     $scope.edgeColors = {
-        "http://purl.obolibrary.org/obo/CHEBI_48705": "#9AFE2E",//YELLOW
-        "http://purl.obolibrary.org/obo/MI_0190": "#FF0040",//purple
-        "http://purl.obolibrary.org/obo/CHEBI_23357": "#9AFE2E",//YELLOW
-        "http://purl.obolibrary.org/obo/CHEBI_25212": "#9AFE2E",//YELLOW
-        "http://purl.obolibrary.org/obo/CHEBI_35224": "#FF0040",//purple
-        "http://purl.obolibrary.org/obo/CHEBI_48706": "#C71585",//WASSALMON#FA8072 NOW PINKRED
-        "http://purl.org/obo/owl/GO#GO_0048018": "#9AFE2E",//YELLOW
-        "http://www.berkeleybop.org/ontologies/owl/GO#GO_0030547":"#C71585",//PINKRED
-        "http://purl.obolibrary.org/obo/MI_0915": "#00FFFF",//aqua
-        "http://purl.obolibrary.org/obo/MI_0407": "#FF0040",//purple
-        "http://purl.obolibrary.org/obo/MI_0191": "#00FFFF",//aqua
-        "http://purl.obolibrary.org/obo/MI_0914": "#FF0040",//purple
-        "http://purl.obolibrary.org/obo/MI_0217": "#9800FF",
-        "http://purl.obolibrary.org/obo/MI_0403": "#00FFFF",//aqua
-        "http://purl.obolibrary.org/obo/MI_0570": "#A0A0A0",
-        "http://purl.obolibrary.org/obo/MI_0194": "#A0A0A0"
+        "http://purl.obolibrary.org/obo/CHEBI_48705": triColor,    //yellow
+        "http://purl.obolibrary.org/obo/MI_0190": noneColor,        //purple
+        "http://purl.obolibrary.org/obo/CHEBI_23357": triColor,    //yellow
+        "http://purl.obolibrary.org/obo/CHEBI_25212": triColor,    //yellow
+        "http://purl.obolibrary.org/obo/CHEBI_35224": noneColor,    //purple
+        "http://purl.obolibrary.org/obo/CHEBI_48706": teeColor,//
+        "http://www.berkeleybop.org/ontologies/owl/GO#GO_0030547": teeColor,//PINKRED
+        "http://purl.obolibrary.org/obo/MI_0915": cirColor,//aqua
+        "http://purl.obolibrary.org/obo/MI_0407": noneColor,//purple
+        "http://purl.obolibrary.org/obo/MI_0191": cirColor,//aqua
+        "http://purl.obolibrary.org/obo/MI_0914": noneColor,//purple
+        "http://purl.obolibrary.org/obo/MI_0217": diaColor,
+        "http://purl.obolibrary.org/obo/MI_0403": cirColor,//aqua
+        "http://purl.obolibrary.org/obo/MI_0570": squColor,
+        "http://purl.obolibrary.org/obo/MI_0194": squColor
     }
 
     // Maps node types to values for Cytoscape visualization
@@ -448,28 +440,47 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         else if (types['http://semanticscience.org/resource/SIO_010056']) { return '60'; }
         else { return '50'; }
     };
+    // Shape colors
     $scope.getColor = function (types) {
         if (types['http://semanticscience.org/resource/activator']) {
-            return "#FFD700"//BLUE
+            return triColor
         } else if (types['http://semanticscience.org/resource/inhibitor']) {
-            return "#C71585"
+            return teeColor
         } else if (types['http://semanticscience.org/resource/protein']) {
-            return "#FFA500"
+            return "#EA6D00"
         } else if (types['http://semanticscience.org/resource/SIO_010056']) {
             return "#112B49"
         } else {
-            return "#FF7F50" //#FFFF00
+            return "#FF7F50" 
         }
     };
-    $scope.getTextlineColor = function (types) {
-        if (types['http://semanticscience.org/resource/activator']) {
-            return "#333333"//BLUE
-        } else if (types['http://semanticscience.org/resource/inhibitor']) {
-            return "#444444"
-        } else if (types['http://semanticscience.org/resource/protein']) {
-            return "#444444"
-        } else {
-            return "#333333" //#FFFF00
+
+        // Used to filter edge interaction types based on color of edge
+    $scope.filter = function(query) {
+        $scope.cy.edges().each(function(i, ele){
+            ele.addClass("hidden");
+        });
+        if (query.triangle === true) {
+            $scope.cy.elements('edge[color="'+triColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.tee === true) {
+            $scope.cy.elements('edge[color="'+teeColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.circle === true) {
+            $scope.cy.elements('edge[color="'+cirColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.diamond === true) {
+            $scope.cy.elements('edge[color="'+diaColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.square === true) {
+            $scope.cy.elements('edge[color="'+squColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.none === true) {
+            $scope.cy.elements('edge[color="'+noneColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
+        } if (query.other === true) {
+            $scope.cy.elements('edge[color="'+otherColor+'"]').each(function(i, ele){ 
+                ele.removeClass("hidden"); });
         }
     };
 
@@ -553,8 +564,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             node.data.shape = $scope.getShape(node.data.types);
             node.data.size = $scope.getSize(node.data.types);
             node.data.color = $scope.getColor(node.data.types);
-            node.data.linecolor = "#FFFF00";
-            node.data.textlinecolor = $scope.getTextlineColor(node.data.types);
+            node.data.linecolor = "#E1EA38";
             node.data.prob = 1;
         }
         return node;
@@ -588,7 +598,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         target: target.data.id, 
                         shape: edgeTypes ? $scope.edgeShapes[edgeTypes[0].uri] : 'none',
                         types: (edgeTypes && !$scope.edgeTypes[edgeTypes[0].uri]) ? 'Interaction with Disease' : $scope.edgeTypes[edgeTypes[0].uri],
-                        color: (edgeTypes && !$scope.edgeColors[edgeTypes[0].uri]) ? '#FF0040' : $scope.edgeColors[edgeTypes[0].uri],
+                        color: (edgeTypes && !$scope.edgeColors[edgeTypes[0].uri]) ? otherColor : $scope.edgeColors[edgeTypes[0].uri],
                         probability: d[$scope.ns.sio('probability-value')][0],
                         zscore: d[$scope.ns.sio('likelihood')][0],  // z-score-value
                         width: (d[$scope.ns.sio('likelihood')][0] * 4) + 1,
@@ -638,6 +648,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         // Populated with [source, target, edge] of non-disease edge interactions
         var notDiseaseEle = [];
 
+        // Calculates the probability of the connection
         var probOfConnection = function(source) {
             var prev = $scope.currStep - 1;
             if (prev < 0) { return 1; }
@@ -820,7 +831,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     });
 
     // First BFS function
-    $('#first-bfs').click(function() {
+    /*$('#first-bfs').click(function() {
         var found = false;
         $scope.cy.nodes().each(function(i, ele){
             if (!i) {
@@ -844,4 +855,5 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             }
         });
     });
+    */
 })

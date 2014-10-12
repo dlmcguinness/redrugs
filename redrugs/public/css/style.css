@@ -124,8 +124,8 @@ a { text-decoration: none; }
 }
 .not-found {
   background-color: #000000;
-  border-color: #FD0140;
-  color: #FD0140;
+  border-color: #FF144B;
+  color: #FF144B;
   text-shadow: 0px #000000;
 }
 
@@ -149,14 +149,14 @@ a { text-decoration: none; }
   height: 0; 
   border-left: 12px solid transparent;
   border-right: 12px solid transparent;
-  border-bottom: 24px solid #FFD700;
+  border-bottom: 24px solid #FED700;
 }
-.inhibitor { color: #C71585; }
+.inhibitor { color: #BF1578; }
 .protein, .disease { 
   height: 22px; 
   width: 22px;
 }
-.protein { background-color: #FFA500; }
+.protein { background-color: #EA6D00; }
 .disease {
   background-color: #112B49;
   border-radius: 5px;
@@ -166,13 +166,6 @@ a { text-decoration: none; }
   height: 25px;
   width: 25px;
   border-radius: 50px;
-}
-#style1 {
-  border-bottom: #BABABA solid 5px;
-} #style2 {
-  border-bottom: #BABABA dashed 5px;
-} #style3 {
-  border-bottom: #BABABA dotted 5px;
 }
 .line {
   width: 75px;
@@ -184,17 +177,17 @@ a { text-decoration: none; }
   margin-right: 15px;
 }
 #type1 {
-  border-bottom: #9AFE2E solid 5px;
+  border-bottom: #FED700 solid 5px;
 } #type2 {
-  border-bottom: #C71585 solid 5px;
+  border-bottom: #BF1578 solid 5px;
 } #type3 {
-  border-bottom: #00FFFF solid 5px;
+  border-bottom: #6FCCDD solid 5px;
 } #type4 {
-  border-bottom: #9800FF solid 5px;
+  border-bottom: #7851A1 solid 5px;
 } #type5 {
   border-bottom: #A0A0A0 solid 5px;
 } #type6 {
-  border-bottom: #FF0040 solid 5px;
+  border-bottom: #A7CE38 solid 5px;
 }
 #type1s, #type2s, #type3s, #type4s, #type5s {
   position: relative;
@@ -203,7 +196,7 @@ a { text-decoration: none; }
 #type1s {
   width: 0px;
   height: 0px;
-  border-left: 10px solid #9AFE2E;
+  border-left: 10px solid #FED700;
   border-top: 7px solid transparent;
   border-bottom: 7px solid transparent;
   left: -15px;
@@ -212,7 +205,7 @@ a { text-decoration: none; }
 #type2s {
   height: 15px;
   width: 6px;
-  background-color: #C71585;
+  background-color: #BF1578;
   left: -15px;
   top: 3px;
   margin-right: 5px;
@@ -225,10 +218,10 @@ a { text-decoration: none; }
   border-radius: 10px;
   left: -15px;
   top: 2px;
-  background: #00FFFF;
+  background: #6FCCDD;
 }
 #type4s { 
-  background: #9800FF;
+  background: #7851A1;
   margin: 3px 10px 0 -11px;
   transform: rotate(-45deg);
   transform-origin: 0 100%;
@@ -294,7 +287,7 @@ a { text-decoration: none; }
 .ui-widget-content { border: 0px; }
 .ui-widget-header {
   background: #FFFFFF;
-  color: #FD0140;
+  color: #FF144B;
   font-size: 16px;
   border: 0px;
   border-bottom: 1px solid #CCC;
