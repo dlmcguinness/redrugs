@@ -300,12 +300,25 @@ a { text-decoration: none; }
 }
 .ui-dialog .ui-dialog-buttonpane button { font-size: 14px !important; }
 
-#numSearch, #numProb {
+#customquery input {
   padding: 0 0 0 3px;
   margin: 0;
+  width: 30px;
 }
-#numSearch { width: 20px; }
-#numProb { width: 30px; }
+#customquery li{
+  margin: 0;
+}
+#customquery ul {
+  margin: 1em 0;
+}
+#customquery input['checkbox'] {
+  padding-left: 10px;
+  display: inline;
+}
+#nodecustom li{
+  display:inline;
+}
+
 
 /* 
  * Edge hover information

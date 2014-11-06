@@ -642,7 +642,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.diseaseToGraph = function(result) {
         // Source, target, edge
         var elements = $scope.getElements(result);
-
         // Populated with [source, target, edge] of disease edge interactions as well as the chain needed to find that disease
         var diseaseEle = [];
         // Populated with [source, target, edge] of non-disease edge interactions
@@ -663,7 +662,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         // Split elements in graph to disease or non-disease. Assumes all diseases are targets.
         for (i = 1; i < elements.length; i+=3) {
             var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
-            console.log(prob);
+            // console.log(prob);
             if (prob >= $scope.probThreshold) {
                 elements[i].data.prob = prob;
                 var trace = [elements[i-1]];
@@ -689,7 +688,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         var resultElements = [];
         // For all diseases found, create chain to original selected node source
         diseaseEle.forEach( function(element) {
-            console.log("adding trace",$scope.traces[element.data.uri]);
+            // console.log("adding trace",$scope.traces[element.data.uri]);
             resultElements = resultElements.concat($scope.traces[element.data.uri]);
         });
 
@@ -719,29 +718,168 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.loaded = result.resources.length;
             return;
         }
+    }
 
+
+    $scope.numSearch = 1;
+    $scope.probThreshold = 0.95;
+    $scope.upcheck = false;
+    $scope.downcheck = true;
+    $scope.nodefilter = {
+        activator: true,
+        inhibitor: true,
+        protein: true,
+        disease: true
+    }
+    $scope.edgefilter = {
+        activation: true,
+        inhibition: true,
+        association: true,
+        reaction: true,
+        cleavage: true,
+        interaction: true
+    }
+    $scope.customQueryDSToGraph = function(result) {
+        // Source, target, edge
+        var elements = $scope.getElements(result);
+
+        // Populated with [source, target, edge] of filtered interactions as well as the chain needed to find them
+        var filteredEle = [];
+        // Populated with [source, target, edge] of potentially not-relevant edge interactions
+        var notfilteredEle = [];
+
+        // Calculates the probability of the connection
+        var probOfConnection = function(source) {
+            var prev = $scope.currStep - 1;
+            if (prev < 0) { return 1; }
+            // Looking at all targets
+            for (j = 1; j < $scope.prevEle[prev].length; j++) {
+                if (source === $scope.prevEle[prev][j].data.id) {
+                    return $scope.prevEle[prev][j].data.prob;
+                }
+            }
+        };
+
+        var checkConnection = function(target, edge) {
+            var node = true;
+            for (var nodetype in $scope.nodefilter) {
+                // If the node type needs to be filtered out...
+                if (!$scope.nodefilter[nodetype]) {
+                    if ((nodetype == "activator" && target["http://semanticscience.org/resource/activator"]) 
+                        || (nodetype == "inhibitor" && target["http://semanticscience.org/resource/inhibitor"])
+                        || (nodetype == "protein" && target["http://semanticscience.org/resource/protein"])
+                        || (nodetype == "disease" && target["http://semanticscience.org/resource/SIO_010056"])) {
+                        return false;
+                    }
+                }
+            }
+            for (var edgetype in $scope.edgefilter) {
+                // If the edge type needs to be filtered out...
+                if (!$scope.edgefilter[edgetype]) {
+                    if ((edgetype == "activation" && (edge=="Agonist" || edge=="Cofactor" || edge=="Metabolite" || edge=="Receptor Agnoist Activity")) 
+                        || (edgetype == "inhibition" && (edge=="Antagonist" || edge=="Receptor Inhibitor Activity"))
+                        || (edgetype == "association" && (edge=="Physical Association" || edge=="Aggregation" || edge=="Colocalization")) 
+                        || (edgetype == "reaction" && edge=="Phosphorylation Reaction") 
+                        || (edgetype == "cleavage" && (edge=="Protein Cleavage" || edge=="Cleavage Reaction")) 
+                        || (edgetype == "interaction" && (edge=="Molecule Connection" || edge=="Effector" || edge=="Direct Interaction" || edge=="Association"))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
+
+        // Split elements in graph to relevant or non-relevant. 
+        for (i = 1; i < elements.length; i+=3) {
+            var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
+            if (prob >= $scope.probThreshold) {
+                elements[i].data.prob = prob;
+                var trace = [elements[i-1]];
+                if ($scope.traces[elements[i-1].data.uri] != null) {
+                    trace = $scope.traces[elements[i-1].data.uri].slice();
+                } 
+                trace.push(elements[i+1]);
+                trace.push(elements[i]);
+                $scope.traces[elements[i].data.uri] = trace;
+
+                satisfies = checkConnection(elements[i].data.types, elements[i+1].data.types)
+                if (satisfies) {
+                    filteredEle.push(elements[i]);
+                    // Add if the data.type isn't a disease
+                    if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
+                        notfilteredEle.push(elements[i-1]);
+                        notfilteredEle.push(elements[i]);
+                        notfilteredEle.push(elements[i+1]);
+                    }
+                }
+                else {
+                    notfilteredEle.push(elements[i-1]);
+                    notfilteredEle.push(elements[i]);
+                    notfilteredEle.push(elements[i+1]);
+                }
+            }
+        }
+        // Saves the non-disease for linking further searches
+        $scope.prevEle[$scope.currStep] = notfilteredEle;
+
+        var resultElements = [];
+        // For all diseases found, create chain to original selected node source
+        filteredEle.forEach( function(element) {
+            // console.log("adding trace",$scope.traces[element.data.uri]);
+            resultElements = resultElements.concat($scope.traces[element.data.uri]);
+        });
+
+        $scope.$apply(function(){ $scope.cy.add(resultElements); });
+
+        // If the search is not the last...
+        if($scope.currStep < $scope.numSearch) {
+            var targets = {};
+            for (i = 1; i < notfilteredEle.length; i+=3) {
+                targets[notfilteredEle[i].data.uri] = true;
+            }
+            $scope.currStep += 1;
+            // Need to do second downstream on all other nodes and then look for diseases. 
+            var g = new $.Graph();
+            Object.keys(targets).forEach(function(d) {
+                $scope.createResource(d,g);
+            });
+            $scope.services.downstream(g, $scope.customQueryDSToGraph, $scope.graph, $scope.handleError);
+        }
+        else {
+            if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
+            $scope.$apply(function(){
+                $scope.cy.layout($scope.layout);
+                $scope.loading = false;
+            });
+            $("#button-box").addClass('hidden');
+            $scope.loaded = result.resources.length;
+            return;
+        }
     }
 
     $scope.getTwoStep = function(query) {
-        $("#warning").removeClass("hidden");
-        $("#warning").dialog({
+        $("#customquery").removeClass("hidden");
+        $("#customquery").dialog({
             resizable: false,
-            width: 310,
-            height: 210,
+            width: 500,
+            height: 400,
             modal: true,
             buttons: {
                 "Continue": function() {
                     $( this ).dialog( "close" );
-                    $scope.numSearch = parseInt($('#numSearch').val(), 10);
-                    $scope.probThreshold = parseFloat($('#numProb').val());
+                    $scope.numSearch = parseInt($scope.numSearch);
+                    $scope.probThreshold = parseFloat($scope.probThreshold);
                     $scope.traces = {};
                     $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
                     $scope.currStep = 0;
                     $scope.prevEle = new Array($scope.numSearch + 1);
                     $scope.$apply(function(){ $scope.loading = true; });
-                    var g = new $.Graph();
-                    query.forEach(function(d) { $scope.createResource(d,g); });
-                    $scope.services.downstream(g, $scope.diseaseToGraph, $scope.graph, $scope.handleError);
+                    if ($scope.downcheck) {
+                        var g = new $.Graph();
+                        query.forEach(function(d) { $scope.createResource(d,g); });
+                        $scope.services.downstream(g, $scope.customQueryDSToGraph, $scope.graph, $scope.handleError);
+                    }
+                    // $scope.services.downstream(g, $scope.diseaseToGraph, $scope.graph, $scope.handleError);
                 },
                 Cancel: function() { $( this ).dialog( "close" ); }
             }
