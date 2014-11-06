@@ -31,9 +31,6 @@ insert{
 		?target a dv:Target .
 		?association dv:action ?action . 
         ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-        ?association <http://bio2rdf.org/drugbank_vocabulary:action> ?action . 
-        ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-
 	}
 	GRAPH ?provenanceGraph
 	{
@@ -51,7 +48,6 @@ insert{
 }
 where{
   { service <http://cu.drugbank.bio2rdf.org/sparql> {
-    select distinct *{
       ?association <http://bio2rdf.org/drugbank_vocabulary:drug> ?drug .
       ?drug a <http://bio2rdf.org/drugbank_vocabulary:Drug> .
       ?association <http://bio2rdf.org/drugbank_vocabulary:target> ?target .
@@ -62,7 +58,6 @@ where{
       ?reference a <http://bio2rdf.org/pubmed_vocabulary:Resource> .
       ?reference <http://rdfs.org/ns/void#inDataset> ?source.
 	  # FILTER (?association = <http://bio2rdf.org/drugbank_resource:DB00247_BE0000650>) #for testing
-    }
     } 
   }
     BIND(STRAFTER(str(?association),"http://bio2rdf.org/") AS ?id)
