@@ -161,11 +161,16 @@ a { text-decoration: none; }
   background-color: #112B49;
   border-radius: 5px;
 }
-.other {
-  background-color: #FF7F50;
+.other, .drug {
   height: 25px;
   width: 25px;
   border-radius: 50px;
+}
+.other {
+  background-color: #FF7F50;
+}
+.drug {
+  background-color: #16a085;
 }
 .line {
   width: 75px;

@@ -93,14 +93,18 @@
       <p>Find all connections based on the following options:</p>
       <p>Number of intermediate nodes: <input type="text" name="numSearch" data-ng-model="numSearch" value="1" /></p>
       <p>Probability min: <input type="text" name="probThreshold" data-ng-model="probThreshold" value="0.95" /></p>
-      <p><input type="checkbox" name="upstream" data-ng-model="upcheck"/> Upstream
-      <input type="checkbox" name="downstream" data-ng-model="downcheck"/> Downstream</p>
+      <form class="form-horizontal">
+        <input type="radio" class="radio inline" value="upstream" data-ng-model="check"/> Find all Incoming Connections
+        <input type="radio" class="radio inline" value="downstream" data-ng-model="check"/> Find all Outgoing Connections
+      </form>
       <ul id="nodecustom">
         <li class="category">Node types: </li>
         <li><input type="checkbox" name="activator" data-ng-model="nodefilter.activator"/>Activator</li>
         <li><input type="checkbox" name="inhibitor" data-ng-model="nodefilter.inhibitor"/>Inhibitor</li>
         <li><input type="checkbox" name="protein" data-ng-model="nodefilter.protein"/>Protein</li>
         <li><input type="checkbox" name="disease" data-ng-model="nodefilter.disease"/>Disease</li>
+        <li><input type="checkbox" name="drug" data-ng-model="nodefilter.drug"/>Drug</li>
+        <li><input type="checkbox" name="undef" data-ng-model="nodefilter.undef"/>Undefined</li>
       </ul>
       <ul id="edgecustom">
         <li class="category">Edge types: </li>
@@ -133,6 +137,7 @@
           <li><div class="inhibitor square fa fa-star fa-2x"></div><span>Inhibitor</span></li>
           <li><div class="protein square"></div><span>Protein</span></li>
           <li><div class="disease square"></div><span>Disease</span></li>
+          <li><div class="drug square"></div><span>Drug</span></li>
           <li><div class="other square"></div><span>Undefined</span></li>
         </ul>
         <h3>Edges</h3>
@@ -185,7 +190,7 @@
       <div class="modal-body">
         <form id="layout" class="form-horizontal" data-ng-submit="cy.layout(layout)">
           <h3>Layout</h3>
-          <input type="radio" class="radio inline" name="optDagre" value="dagre" checked="checked" data-ng-model="layout.name"/> DAGre
+ <!--          <input type="radio" class="radio inline" name="optDagre" value="dagre" checked="checked" data-ng-model="layout.name"/> DAGre -->
           <input type="radio" class="radio inline" name="optArbor" value="arbor" data-ng-model="layout.name"/> Arbor
           <input type="radio" class="radio inline" name="optCola" value="cola" data-ng-model="layout.name"/> Cola
           <input type="radio" class="radio inline" name="optSpringy" value="springy" data-ng-model="layout.name"/> Springy
