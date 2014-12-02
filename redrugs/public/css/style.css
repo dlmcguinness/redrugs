@@ -1,143 +1,276 @@
 body {
   font: 14px helvetica neue, helvetica, arial, sans-serif;
-  background:url("../img/congruent_outline.png");
+  background:url("../img/simple_dashed_@2X.png");
 }
 html, body, .container {
   width: 100%;
   height: 100%;
-}
-h1 {
-  font-weight: normal;
-  text-align: center;
-  font-size: 32px;
-  padding-top: 0.5em;
-}
-h2, h3, h4 { padding: 0; }
-h2 { font-size: 24px; }
-h3 {
-  font-size: 14px;
-  margin: 0 0 0.5em 0;
-  border-bottom: 1px solid #CCC;
-  display: block;
-}
-h4 {
-  font-size: 14px;
-  margin: 0;
-}
-ol, ul { list-style: none; }
-li { padding-bottom: 0.5em; }
-form { margin: 5px 0; }
-hr { margin: 3px 0; }
-a { text-decoration: none; }
-
-
-.hidden { visibility: hidden; }
-.searchBox { padding: 0.3em; }
-.radio { position: relative; top: -2px; }
-.opaque { background-color: rgba(0,0,0,0.5) !important; }
-.ui-autocomplete {
-  max-height: 100px;
-  max-width: 280px;
-  overflow-y: auto;
+  padding: 0;
   overflow-x: hidden;
 }
-
-/* 
- * Initial page search-box 
- */
-.centered-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  border-radius: 10px;
-  padding: 1em;
-  z-index: 100;
-  text-align: center;
-  height: 200px;
-  width: 400px;
-  margin-top: -100px;
-  margin-left: -200px;
+ol, ul { list-style: none; }
+a { text-decoration: none !important; }
+h1 {
+  font-family: 'Muli', sans-serif;
+  text-transform: uppercase;
 }
-#centered-box .dropdown-menu {
-  width: 57%;
-}
-.modal-body {
-  padding: 0 15px 15px 15px;
-}
-.help {
-  cursor: pointer;
-  position: absolute;
-  padding: 10px;
-  bottom: 0.5em;
-  right: 0.5em;
-  text-align: left;
-}
-.help-info {
-  z-index: 120;
-  background-color: white;
-  text-align: left;
-  color: black;
+form { margin: 0; padding: 0; }
+.hidden {
   display: none;
 }
 
 /* 
- * Top left search-box 
+ * Custom Bootstrap CSS
  */
-#interface {
-  position: absolute;
+.alert { 
+  font-size: 11px;
+  padding: 0.5em !important;
+}
+.btn-group + .btn-group { margin: none; }
+.col-md-12, .col-md-9, .col-md-3 { padding: 0; }
+
+/*
+ * INITIAL SEARCH
+ */
+#initial {
+  background-color: white;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-top: 2em solid #f1c40f;
+  padding: 1em;
   z-index: 10;
 }
-#min-search {
-  float: left;
-  margin: 6px 6px 10px 0;
+#initial h1 {
+  margin-bottom: 0.5em;
 }
-#search-box {
-  position: fixed;
-  top: 1em;
-  left: 1em;
-  z-index: 15;
-  padding: 1em 1em 0 1em;
-  width: 355px;
-  border-radius: 10px;
+#initial label {
+  font-size: 1.2em;
+  padding-top: 0.3em;
 }
-#search-box, #starting-box { color: white; }
-#max-search h2 {
-  font-weight: normal;
-  font-size: 18px;
-  margin: 0;
-  padding: 0 2px 0 43px;
-  text-align: left;
+#initial .searchbtn, .searchBox {
+  height: 2.0em !important;
+  line-height: 1.5em !important;
 }
-#loader {
-  width: 20px;
+#help {
+  cursor: pointer;
   float: right;
-  position: relative;
-  top: 16px;
-  margin-right: 7px;
+  margin: 1em 0 0 0;
+  z-index: 5;
 }
-#btns { margin: 1em 0 1.5em 0; }
-.found {
-  background-color: #FFFFFF;
-  color: #2C9378;
-  border-color: #2C9378;
-  text-shadow: 0px #FFFFFF;
-}
-.not-found {
-  background-color: #000000;
-  border-color: #FF144B;
-  color: #FF144B;
-  text-shadow: 0px #000000;
+#help-info {
+  background-color: white;
+  color: black;
+  padding: 1.5em 1em;
+  display: none;
+  float: left;
 }
 
 /* 
- * Legend
+ * CYTOSCAPE CONTAINER
  */
-.nodes-legend { height: 65px; }
-.nodes-legend li {
-  display: inline-block;
-  padding-right: 30px;
+#results {
+  position: relative;
+  height:100%;
+  z-index: 0;
 }
-.edges-legend { overflow-y: auto; }
+
+/*
+ * MAIN SEARCH GUI
+ */
+#interface {
+  position: relative;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  visibility: hidden; 
+  border-top: 1em solid #f1c40f;
+  border-bottom: 1px solid #f1c40f;
+  background-color: white;
+}
+#interface h3 {
+  font-family: 'Muli', sans-serif;
+  text-transform: uppercase;
+  font-size: 1em;
+  line-height: 1.5em;
+  display: inline-block;
+  margin: 5px 1em 0 0;
+}
+#search {
+  padding: 1em;
+}
+#search h1 {
+  font-size: 1.5em;
+  line-height: 1em;
+}
+#mininterface {
+  background-color: #f1c40f;
+  text-align:center;
+  z-index: 12;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  cursor: pointer;
+}
+#mininterface, #mininterface:hover {
+  color: black;
+  text-decoration: none !important; 
+  padding: 3px 0;
+  font-family: 'Muli', sans-serif;
+}
+.nav {
+  margin-bottom: 0;
+}
+.tabs {
+  padding-bottom: 1em;
+}
+.tab-content {
+  padding: 0 1em;
+  border-left: 1px solid #f1c40f;
+}
+.tab-pane {
+  padding: 1em 0;
+}
+
+/* 
+ * EXPLORE
+ */
+#explore label, #explore input, #explore li {
+  font-size: 12px;
+}
+#explore label {
+  line-height: 2em;
+}
+#explore input[type=text], #customquery input[type=text] {
+  width: 50px;
+  height: 2em;
+}
+#panning, #multiselect, #bgdark, #bglight {
+  font-size: 10px;
+  line-height: 1.5em !important;
+}
+#accordion {
+  margin-top: 1em;
+}
+.panel-heading {
+  padding: 0.5em 1em;
+}
+.panel-group {
+  margin: 0;
+}
+.ui-dialog-title {
+  font-weight: normal;
+}
+.chkbx {
+  min-width: 90px;
+  display: inline-block;
+  margin-right: 1em;
+}
+#nodecustom h3, #edgecustom h3 {
+  font-size: 0.8em !important;
+  display: inline-block;
+  min-width: 90px;
+}
+#othercustom input[type=text] {
+  margin-right: 1em;
+}
+#edgecustom {
+  margin-bottom: 1em;
+}
+#customquery p {
+  margin: 5px 0 1em 0;
+  padding: 0;
+  font-size: 12px;
+}
+#submitCustom {
+  float: right;
+}
+
+/* 
+ * EDGE DETAILS
+ */
+#dbref {
+  margin: 0; 
+}
+#dbref li {
+  list-style: circle;
+  margin-left: 2em;
+}
+#edgeoverview {
+  margin-top: 10px;
+  padding:0 10px 1em 0;
+}
+
+
+/* 
+ * OPTIONS 
+ */
+#layout {
+  margin: 0 0 0.5em 0;
+}
+#layout h3, #layout span {
+  position: relative;
+  top: 4px;
+}
+#layout input {
+  line-height: 1.5em;
+  margin-top: 7px;
+}
+#layout span {
+  padding: 0 10px 0 0;
+}
+
+/* 
+ * HELP AND ABOUT
+ */
+#faq li, #about p {
+  font-size: 12px;
+}
+#faq h3, #about h3 {
+  font-size: 14px;
+  border-bottom: 1px solid #f1c40f;
+  margin-bottom: 0.5em;
+}
+#faq li {
+  list-style: square;
+}
+.aboutsm {
+  font-size: 10px;
+  float:right;
+}
+
+
+/*
+ * LEGEND
+ */
+#legend, #mininterface {
+  visibility: hidden; 
+}
+#legend ul {
+  margin: 0;
+}
+#legend li {
+  display: inline-block;
+}
+#legend h3 {
+  width: 70px;
+}
+.nodes-legend li + li {
+  width: 100px;
+}
+.edges-legend {
+  padding: 7px 0px 0px;
+  margin-top: 0.5em !important;
+  border-top: 1px solid #F1C40F;
+}
+.edges-legend h3 {
+  position: relative;
+  top: -20px !important;
+}
+.edges-legend p {
+  margin: 0;
+}
+.edges-legend li + li {
+  padding-right: 1em;
+}
 .line, .square {
   display: inline-block;
   margin-right: 10px;
@@ -237,132 +370,3 @@ a { text-decoration: none; }
   top: 1px;
   left: -16px;
 }
-
-/*
- * Options
- */
-.inline-options {
-  display: inline-block;
-  margin-top: 1em;
-  margin-right: 50px;
-}
-.inline-h3 {
-  float: left;
-  margin-right: 0.5em;
-  border: #FFF;
-}
-.inline-btns { margin-top: 5px; }
-#layout-btn, #filter-btn { float: right; }
-#filter-edges input { display: inline-block; }
-.buffer-top { margin-top: 10px; }
-
-/* 
- * Selected node options
- */
-#button-box { 
-  position: relative; 
-  padding: 10px;
-  border-radius: 10px;
-}
-#details-hover, #bfs-hover, #upstream-hover, #downstream-hover, #twoStep-hover { 
-  display: none; 
-  background-color: black;
-  color: white;
-  position: absolute;
-  padding: 10px;
-  border-radius: 10px;
-  z-index: 250;
-  top: -52;
-}
-#details-hover:before, #bfs-hover:before, #upstream-hover:before, #downstream-hover:before, #twoStep-hover:before {
-   content:"";
-   position: absolute;
-   width: 0;
-   height: 0;
-   border-top: 16px solid black;
-   border-left: 4px solid transparent; 
-   border-right: 10px solid transparent; 
-}
-#details-hover, #bfs-hover, #upstream-hover, #downstream-hover, #twoStep-hover { left: -21px; top: -56px; }
-#details-hover:before, #bfs-hover:before, #upstream-hover:before, #downstream-hover:before, #twoStep-hover:before { margin: 22px 0px 0px 28px; }
-
-/* 
- * Warning
- */
-.ui-widget-content { border: 0px; }
-.ui-widget-header {
-  background: #FFFFFF;
-  color: #FF144B;
-  font-size: 16px;
-  border: 0px;
-  border-bottom: 1px solid #CCC;
-}
-.ui-dialog .ui-dialog-title { margin: 0.5em 0 0.1em 0px; }
-.ui-dialog-content { font-size: 14px; }
-.ui-dialog .ui-dialog-buttonpane {
-  border-width: 0px;
-  margin-top: 0px;
-}
-.ui-dialog .ui-dialog-buttonpane button { font-size: 14px !important; }
-
-#customquery input {
-  padding: 0 0 0 3px;
-  margin: 0;
-  width: 30px;
-}
-#customquery li{
-  margin: 0;
-}
-#customquery ul {
-  margin: 1em 0;
-}
-#customquery input['checkbox'] {
-  padding-left: 10px;
-  display: inline;
-}
-#nodecustom li{
-  display:inline;
-}
-
-
-/* 
- * Edge hover information
- */
-#edge-info {
-  padding: 10px;
-  min-width: 200px;
-  z-index: 250;
-  background: rgba(0,0,0,0.8);
-  position: absolute;
-  border-radius: 10px;
-  left: 200px;
-  color: white;
-}
-#edge-info:before {
-  content:"";
-  position: absolute;
-  width: 0; 
-  height: 0;
-  border-right: 0px solid transparent;
-  border-top: 21px solid rgba(0,0,0,0.8);
-  border-left: 18px solid transparent;
-  margin: 6px 0px 0px -28px;
-}
-#edge-info p, #edge-info ul { padding: 0; margin: 0; }
-#edge-info li { padding: 0 0 0 1em; }
-#edge-info a { color: #2C9378; text-decoration: none; }
-#edge-style span { margin-right: 25px; }
-
-#results {
-  height: 100%;
-  width: 100%;
-  z-index: 0;
-  cursor: pointer;
-}
-
-#first-bfs {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-}
-

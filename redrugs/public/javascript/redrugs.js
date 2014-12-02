@@ -1,32 +1,8 @@
 var redrugsApp = angular.module('redrugsApp', []);
 
 redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
-
-    // OSC code & 129.161.106.124 CCC computer
-    /*
-        socket = io.connect('http://127.0.0.1', { port: 8081, rememberTransport: false});
-        console.log('oi');
-        socket.on('connect', function() {
-            // sends to socket.io server the host/port of oscServer and oscClient
-            socket.emit('config', {
-                server: {
-                    port: 3333,
-                    host: '127.0.0.1' 
-                },
-                client: {
-                    port: 3334,
-                    host: '129.161.106.124'
-                }
-            });
-        });
-        socket.on('message', function(obj) {
-            var status = document.getElementById("status");
-            status.innerHTML = obj[0];
-            console.log(obj);
-        });
-    */
-    // End of OSC code
-
+    
+    // ELEMENTS
     $scope.elements = {
         nodes:[],
         edges:[]
@@ -34,32 +10,62 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.nodeMap = {};
     $scope.edges = [];
     $scope.edgeMap = {};
-    $scope.edgesFilter = {
-        triangle: true,
-        tee: true,
-        circle: true,
-        diamond: true,
-        square: true,
-        none: true,
-        other: true
-    };
-    $scope.layout = {
-        name: 'arbor',
-        liveUpdate: false,
-        circle: true,
-        directed: true,
-        maxSimulationTime: 2000,
-        padding: [100,100,100,100]
-    };
-    $scope.resources = {};
+
+    // SEARCH TERMS
     $scope.searchTerms = "";
     $scope.searchTermURIs = {};
-    $scope.showLabel = true;
 
-    $scope.container = $('#results');
-    $scope.result = $("#result");
+    // JQUERY AUTOCOMPLETE UI WIDGET
+    $(".searchBox").autocomplete({
+        minLength : 3,
+        select: function( event, ui ) {
+            if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
+            $scope.searchTerms = ui.item.label;
+            $('.searchBox').val(ui.item.label);
+            return false;
+        },
+        focus: function( event, ui ) {
+            if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
+            $('.searchBox').val(ui.item.label);
+            return false;
+        },
+        source: function(query, process) {
+            var g = new $.Graph();
+            var res = g.getResource($scope.ns.local("query"));
+            res[$scope.ns.prov('value')] = [query.term];
+            res[$scope.ns.rdf('type')] = [g.getResource($scope.ns.pml('Query'))];
+            $scope.services.search(g,function(graph) {
+                var keywords = graph.resources.map(function(d) {
+                    return graph.getResource(d);
+                    }).filter(function(d) {
+                        return d[$scope.ns.pml('answers')];
+                    }).map(function(d) {
+                        var result = d[$scope.ns.rdfs('label')][0];
+                        $scope.searchTermURIs[result] = d.uri;
+                        return result;
+                    })
+                if (keywords.length === 0) {
+                    keywords = ["No Matches Found"];
+                    $(".searchbtn").attr("disabled", "disabled");
+                }
+                else { $(".searchbtn").removeAttr("disabled"); }
+                process(keywords);
+            }, $scope.graph, $scope.handleError);
+        }
+    });
+
+
+    /* 
+     * CYTOSCAPE IMPLEMENTATION
+     */
+    $scope.results = $('#results');
+    $scope.neighborhood = [];
+    $scope.layout = {
+        name: 'arbor',
+        padding: [100,100,100,100]
+    };
     $scope.createGraph = function() {
-        $scope.container.cytoscape({
+        $scope.results.cytoscape({
             style: cytoscape.stylesheet()
                 .selector('node')
                 .css({
@@ -102,17 +108,13 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     'transition-property': 'background-color, line-color, target-arrow-color, height, width',
                     'transition-duration': '0.5s'
                 })
-                .selector('.hidden')
+                .selector(':locked')
                 .css({
-                    'opacity': 0,
+                    'background-color': '#7f8c8d'
                 })
                 .selector('.faded')
                 .css({
                     'opacity': 0.25,
-                    'text-opacity': 0
-                })
-                .selector('.hideLabel')
-                .css({
                     'text-opacity': 0
                 }),
 
@@ -124,80 +126,44 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 $scope.cy = cy = this;
                 cy.boxSelectionEnabled(false);
 
-                // Hides dynamically revealed objects on page on pan, drag, zoom
-                cy.on('drag', function(e) {
-                    $("#button-box, #edge-info").addClass('hidden');
-                });
-                cy.on('pan', function(e) {
-                    $("#button-box, #edge-info").addClass('hidden');
-                });
-                cy.on('zoom', function(e) {
-                    $("#button-box, #edge-info").addClass('hidden');
-                });
-
-                // Double-clicking on whitespace removes all CSS changes
+                // Clicking on whitespace removes all CSS changes
                 cy.on('vclick', function(e){
                     if( e.cyTarget === cy ){
                         cy.elements().removeClass('faded');
-                        if (!$scope.showLabel) {
-                            cy.elements().addClass('hideLabel');
-                        }
-                        $("#button-box, #edge-info").addClass('hidden');
                         cy.elements().removeClass("highlighted");
+                        $scope.bfsrun = false;
+                        $('#tabs a[href="#legend"]').tab('show'); 
+                        $("#edgeask").removeClass('hidden');
+                        $('#edgeoverview').html("");
+                        $('#edgetable').html("");
+                        $scope.neighborhood = [];
                     }
                 });
 
-                // Shows the label if hovering and labels are hidden
-                cy.on('tapdragover', 'node', function(e) {
-                    if (!$scope.showLabel) {
-                        e.cyTarget.removeClass('hideLabel');
-                    }
-                });
-                cy.on('tagdragout', 'node', function(e) {
-                    if (!$scope.showLabel) {
-                        e.cyTarget.addClass('hideLabel');
-                    }
-                });
-
-                // Repositions the button box if selected node is dragged
-                cy.on('free', 'node', function(e) {
-                    var selected = $scope.cy.$('node:selected');
-                    selected.nodes().each(function(i,d) {
-                        var pos = d.renderedPosition();
-                        $("#button-box").css({
-                            "left": pos.x-105,
-                            "top": pos.y-90
-                        });
-                        $("#button-box").removeClass('hidden');
-                    });
-                });
-
-                // Double-clicking a node...
+                // When a node is selected
                 cy.on('select', 'node', function(e){
                     var node = e.cyTarget; 
-                    var neighborhood = node.neighborhood().add(node);
-                    var pos = node.renderedPosition();
-                    
-                    cy.elements().addClass('faded');
-                    neighborhood.removeClass('faded');
-                    if (!$scope.showLabel) {
-                        node.removeClass('hideLabel');
-                        neighborhood.removeClass('hideLabel');
-                    }
-                    
-                    $("#button-box").css({
-                        "left": pos.x-105,
-                        "top": pos.y-90
-                    });
-                    $("#button-box").removeClass('hidden');
+                    $scope.bfsrun = false;
+                    $('#tabs a[href="#explore"]').tab('show'); 
+                    $("#edgeask").removeClass('hidden');
+                    $('#edgeoverview').html("");
+                    $('#edgetable').html("");
 
-                    $('#edge-info').addClass('hidden');
+                    // Fade outside of neighborhood of all selected elements
+                    var neighborhood = node.neighborhood().add(node);
+                    $scope.neighborhood.push(neighborhood);
+                    if ($scope.neighborhood.length > 0) {
+                        cy.elements().addClass('faded');
+                        for (var n in $scope.neighborhood) {
+                            $scope.neighborhood[n].removeClass('faded');
+                        }
+                    }
                     // socket.send((pos.x).toFixed(2));
                     // socket.send((pos.y).toFixed(2));
                 });
 
-                // Double-clicking an edge...
-                cy.on('click', 'edge', function(e) {
+                // When an edge is selected
+                cy.on('select', 'edge', function(e) {
                     var uris = [];
                     var db = function() {
                         var result = "";
@@ -240,24 +206,24 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         }
                         return t;
                     }
-                    var pos = e.cyRenderedPosition;
                     var edge = e.cyTarget;
-
                     var table = infolist(edge.data().data);
-                    $("#edge-info").html(
-                        "<p>Interaction: " + edge.data().types + "</p><p> Probability: " + edge.data().probability + "</p> Z-Score: " + edge.data().zscore + "<ul> Databases Referenced: " + db() + "</ul><p><a href='#edgeTable' role='button' data-toggle='modal'>Click to view all interactions</a></p>"); 
-                    $("#edgeTable .modal-body").html('<table class="table"><thead><tr><th>Database</th><th>Interaction Type</th><th>Probability</th></tr></thead><tbody>' + table + '</tbody></table>');
-                    $("#edge-info").css({
-                        "left": pos.x+20,
-                        "top": pos.y-10
-                    });
-                    $("#edge-info").removeClass('hidden');
+                    $("#edgeoverview").html(
+                        "<p><strong>Interaction:</strong> " + edge.data().types + "</p><p><strong>Probability:</strong> " + edge.data().probability + "</p><p><strong>Z-Score:</strong> " + edge.data().zscore + "</p><ul id='dbref'><strong>Databases Referenced:</strong> " + db() + "</ul>"); 
+                    $("#edgetable").html('<table class="table"><thead><tr><th>Database</th><th>Interaction Type</th><th>Probability</th></tr></thead><tbody>' + table + '</tbody></table>');
+                    $('#tabs a[href="#edgeinfo"]').tab('show'); 
+                    $("#edgeask").addClass('hidden');
                 });
             }
         });
     }
     $scope.createGraph();
 
+
+    /* 
+     * SADI SERVICES
+     * Run asynchronously
+     */
     $scope.graph = $.Graph();
     $scope.ns = {
         rdf: $.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
@@ -268,7 +234,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         dcterms: $.Namespace("http://purl.org/dc/terms/"),
         local: $.Namespace("urn:redrugs:"),
     };
-    // SADI services
     $scope.services = {
         search: $.SadiService("/api/search"),
         process: $.SadiService("/api/process"),
@@ -276,89 +241,13 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         downstream: $.SadiService("/api/downstream"),
     };
 
-    // JQuery Autocomplete UI widget
-    $(".searchBox").autocomplete({
-        minLength : 3,
-        select: function( event, ui ) {
-            if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
-            $scope.searchTerms = ui.item.label;
-            $('.searchBox').val(ui.item.label);
-            return false;
-        },
-        focus: function( event, ui ) {
-            if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
-            $('.searchBox').val(ui.item.label);
-            return false;
-        },
-        source: function(query, process) {
-            var g = new $.Graph();
-            var res = g.getResource($scope.ns.local("query"));
-            res[$scope.ns.prov('value')] = [query.term];
-            res[$scope.ns.rdf('type')] = [g.getResource($scope.ns.pml('Query'))];
-            $scope.services.search(g,function(graph) {
-                var keywords = graph.resources.map(function(d) {
-                    return graph.getResource(d);
-                    }).filter(function(d) {
-                        return d[$scope.ns.pml('answers')];
-                    }).map(function(d) {
-                        var result = d[$scope.ns.rdfs('label')][0];
-                        $scope.searchTermURIs[result] = d.uri;
-                        return result;
-                    })
-                if (keywords.length === 0) {
-                    keywords = ["No Matches Found"];
-                    $(".search-btn").attr("disabled", "disabled");
-                }
-                else { $(".search-btn").removeAttr("disabled"); }
-                process(keywords);
-            }, $scope.graph, $scope.handleError);
-        }
-    });
-
-    $scope.handleError = function(data,status, headers, config) {
-        $scope.error = true;
-        $scope.loading = false;
-    };
-    // Gets the selected nodes
-    $scope.getSelected = function(attr) {
-        if (!$scope.cy) return [];
-        var selected = $scope.cy.$('node:selected');
-        var query = [];
-        selected.nodes().each(function(i,d) { query.push(d.data(attr)); });
-        return query;
-    };
-    // Gets the details of the selected node
-    $scope.getDetails = function(query) {
-        var g = new $.Graph();
-        query.forEach(function(uri) { window.open(uri); });
-    };
-
-    // Shows BFS animation starting from selected node
-    $scope.showBFS = function(query) {
-        var g = new $.Graph();
-        query.forEach(function(id) {
-            cy.elements().removeClass("highlighted");
-            var root = "#" + id;
-            var bfs = cy.elements().bfs(root, function(){}, true);
-            var i = 0;
-            var highlightNextEle = function(){
-              bfs.path[i].addClass('highlighted');
-              bfs.path[i].removeClass('faded');
-              if( i < bfs.path.length - 1){
-                i++;
-                setTimeout(highlightNextEle, 100);
-              }
-            };
-            highlightNextEle();
-        });
-    };
 
     /* 
-     * MAPPINGS 
+     * URI MAPPINGS 
      */
 
-    // Maps edge interaction types to values for Cytoscape visualization
-    $scope.edgeTypes = {
+    // Maps each type of edge interaction with its name.
+    $scope.edgeNames = {
         "http://purl.obolibrary.org/obo/CHEBI_48705": "Agonist",                   
         "http://purl.obolibrary.org/obo/MI_0190": "Molecule Connection",  
         "http://purl.obolibrary.org/obo/CHEBI_23357": "Cofactor",                  
@@ -376,117 +265,187 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         "http://purl.obolibrary.org/obo/MI_0570": "Protein Cleavage",              
         "http://purl.obolibrary.org/obo/MI_0194": "Cleavage Reaction"             
     }
-    $scope.edgeShapes = {
-        "http://purl.obolibrary.org/obo/CHEBI_48705": "triangle",
-        "http://purl.obolibrary.org/obo/MI_0190": "none",
-        "http://purl.obolibrary.org/obo/CHEBI_23357": "triangle",
-        "http://purl.obolibrary.org/obo/CHEBI_25212": "triangle",
-        "http://purl.obolibrary.org/obo/CHEBI_35224": "none",
-        "http://purl.obolibrary.org/obo/CHEBI_48706": "tee",
-        "http://purl.org/obo/owl/GO#GO_0048018": "triangle",
-        "http://www.berkeleybop.org/ontologies/owl/GO#GO_0030547":"tee",
-        "http://purl.obolibrary.org/obo/MI_0915": "circle",
-        "http://purl.obolibrary.org/obo/MI_0407": "none",
-        "http://purl.obolibrary.org/obo/MI_0191": "circle",
-        "http://purl.obolibrary.org/obo/MI_0914": "none",
-        "http://purl.obolibrary.org/obo/MI_0217": "diamond",
-        "http://purl.obolibrary.org/obo/MI_0403": "circle",
-        "http://purl.obolibrary.org/obo/MI_0570": "square",
-        "http://purl.obolibrary.org/obo/MI_0194": "square",
+    // Maps edge interaction types to values for Cytoscape visualization
+    $scope.edgeTypes = {
+        "tri" : {
+            "shape": "triangle",
+            "color": "#FED700",
+            "uris": [
+                "http://purl.obolibrary.org/obo/CHEBI_48705", 
+                "http://purl.obolibrary.org/obo/CHEBI_23357",
+                "http://purl.obolibrary.org/obo/CHEBI_25212",
+                "http://purl.org/obo/owl/GO#GO_0048018"
+            ],
+            "filter": false
+        },
+        "tee" : {
+            "shape": "tee",
+            "color": "#BF1578",
+            "uris": [
+                "http://purl.obolibrary.org/obo/CHEBI_48706",
+                "http://www.berkeleybop.org/ontologies/owl/GO#GO_0030547",
+            ],
+            "filter": false
+        },
+        "cir" : {
+            "shape": "circle",
+            "color": "#6FCCDD",
+            "uris": [
+                "http://purl.obolibrary.org/obo/MI_0915",
+                "http://purl.obolibrary.org/obo/MI_0191",
+                "http://purl.obolibrary.org/obo/MI_0403"
+            ],
+            "filter": false
+        },
+        "dia" : {
+            "shape": "diamond",
+            "color": "#7851A1",
+            "uris": [
+                "http://purl.obolibrary.org/obo/MI_0217"
+            ],
+            "filter": false
+        },
+        "squ" : {
+            "shape": "square",
+            "color": "#A0A0A0",
+            "uris": [
+                "http://purl.obolibrary.org/obo/MI_0570",
+                "http://purl.obolibrary.org/obo/MI_0194"
+            ],
+            "filter": false
+        },
+        "non" : {
+            "shape": "none",
+            "color": "#A7CE38",
+            "uris": [
+                "http://purl.obolibrary.org/obo/MI_0190",
+                "http://purl.obolibrary.org/obo/CHEBI_35224",
+                "http://purl.obolibrary.org/obo/MI_0407",
+                "http://purl.obolibrary.org/obo/MI_0914"
+            ],
+            "filter": false
+        },
+        "other": {
+            "shape": "none",
+            "color": "#FF0040",
+            "uris": [],
+            "filter": false
+        }
     }
-
-    var triColor = "#FED700";
-    var teeColor = "#BF1578";
-    var cirColor = "#6FCCDD";
-    var diaColor = "#7851A1";
-    var squColor = "#A0A0A0";
-    var noneColor = "#A7CE38";
-    var otherColor = "#FF0040";
-
-    $scope.edgeColors = {
-        "http://purl.obolibrary.org/obo/CHEBI_48705": triColor,    //yellow
-        "http://purl.obolibrary.org/obo/MI_0190": noneColor,        //purple
-        "http://purl.obolibrary.org/obo/CHEBI_23357": triColor,    //yellow
-        "http://purl.obolibrary.org/obo/CHEBI_25212": triColor,    //yellow
-        "http://purl.obolibrary.org/obo/CHEBI_35224": noneColor,    //purple
-        "http://purl.obolibrary.org/obo/CHEBI_48706": teeColor,//
-        "http://www.berkeleybop.org/ontologies/owl/GO#GO_0030547": teeColor,//PINKRED
-        "http://purl.obolibrary.org/obo/MI_0915": cirColor,//aqua
-        "http://purl.obolibrary.org/obo/MI_0407": noneColor,//purple
-        "http://purl.obolibrary.org/obo/MI_0191": cirColor,//aqua
-        "http://purl.obolibrary.org/obo/MI_0914": noneColor,//purple
-        "http://purl.obolibrary.org/obo/MI_0217": diaColor,
-        "http://purl.obolibrary.org/obo/MI_0403": cirColor,//aqua
-        "http://purl.obolibrary.org/obo/MI_0570": squColor,
-        "http://purl.obolibrary.org/obo/MI_0194": squColor
-    }
-
     // Maps node types to values for Cytoscape visualization
-    $scope.getShape = function (types) {
-        if (types['http://semanticscience.org/resource/activator']) {
-            return "triangle"
-        } else if (types['http://semanticscience.org/resource/inhibitor']) {
-            return "star"
-        } else if (types['http://semanticscience.org/resource/protein']) {
-            return "square"
-        } else if (types['http://semanticscience.org/resource/SIO_010056']) {
-            return "roundrectangle"
-        } else {
-            return "circle" //circle
+    $scope.nodeTypes = {
+        "triangle" : {
+            "shape": "triangle",
+            "size": "70",
+            "color": "#FED700",
+            "uris": ["http://semanticscience.org/resource/activator"]
+        },
+        "star" : {
+            "shape": "star",
+            "size": "70",
+            "color": "#BF1578",
+            "uris": ["http://semanticscience.org/resource/inhibitor"]
+        },
+        "square" : {
+            "shape": "square",
+            "size": "50",
+            "color": "#EA6D00",
+            "uris": ["http://semanticscience.org/resource/protein"]
+        },
+        "rect" : {
+            "shape": "roundrectangle",
+            "size": "60",
+            "color": "#112B49",
+            "uris": ["http://semanticscience.org/resource/SIO_010056"]
+        },
+        "circle" : {
+            "shape": "circle",
+            "size": "50",
+            "color": "#16A085",
+            "uris": ["http://semanticscience.org/resource/drug"]
+        },
+        "other" : {
+            "shape": "circle",
+            "size": "50",
+            "color": "#FF7F50",
+            "uris": []
         }
-    };
-    $scope.getSize = function (types) {
-        if (types['http://semanticscience.org/resource/activator'] || types['http://semanticscience.org/resource/inhibitor']) { return '70'; }
-        else if (types['http://semanticscience.org/resource/SIO_010056']) { return '60'; }
-        else { return '50'; }
-    };
-    // Shape colors
-    $scope.getColor = function (types) {
-        if (types['http://semanticscience.org/resource/activator']) {
-            return triColor;
-        } else if (types['http://semanticscience.org/resource/inhibitor']) {
-            return teeColor;
-        } else if (types['http://semanticscience.org/resource/protein']) {
-            return "#EA6D00";
-        } else if (types['http://semanticscience.org/resource/SIO_010056']) {
-            return "#112B49";
-        } else if (types['http://semanticscience.org/resource/drug']) {
-            return "#16a085"; 
-        } else {
-            return "#FF7F50";
+    }
+    // Gets the node feature of a given uri.
+    $scope.getNodeFeature = function(feature, uris) {
+        var keys = Object.keys($scope.nodeTypes);
+        for (var i = 0; i < keys.length; i++) {
+            for (var j = 0; j < uris.length; j++) {
+                if ($scope.nodeTypes[keys[i]]["uris"].indexOf(uris[j]) > -1) {
+                    return $scope.nodeTypes[keys[i]][feature];
+                }
+            }
         }
-    };
+        return $scope.nodeTypes["other"][feature];
+    }
+    // Gets the edge feature of a given uri.
+    $scope.getEdgeFeature = function(feature, uri) {
+        if (feature == "name") { return $scope.edgeNames[uri]; }
+        else {
+            var keys = Object.keys($scope.edgeTypes);
+            for (var i = 0; i < keys.length; i++) {
+                if ($scope.edgeTypes[keys[i]]["uris"].indexOf(uri) > -1) {
+                    return $scope.edgeTypes[keys[i]][feature];
+                }
+            }
+            return $scope.edgeTypes["other"][feature];
+        }
+    }
 
-    // Used to filter edge interaction types based on color of edge
-    $scope.filter = function(query) {
-        $scope.cy.edges().each(function(i, ele){
-            ele.addClass("hidden");
-        });
-        if (query.triangle === true) {
-            $scope.cy.elements('edge[color="'+triColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.tee === true) {
-            $scope.cy.elements('edge[color="'+teeColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.circle === true) {
-            $scope.cy.elements('edge[color="'+cirColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.diamond === true) {
-            $scope.cy.elements('edge[color="'+diaColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.square === true) {
-            $scope.cy.elements('edge[color="'+squColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.none === true) {
-            $scope.cy.elements('edge[color="'+noneColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        } if (query.other === true) {
-            $scope.cy.elements('edge[color="'+otherColor+'"]').each(function(i, ele){ 
-                ele.removeClass("hidden"); });
-        }
-    };
 
-    // Functions to create and add values to graph
+    /* 
+     * OPTIONS
+     */
+    $scope.showLabel = true;
+    $scope.bfsrun = false;
+    $scope.numSearch = 1;
+    $scope.probThreshold = 0.95;
+    $scope.found = -1;
+    $scope.once = false;
+    $scope.query = "none";     
+    $scope.filter = {
+        "customNode": {
+            "activator": true,
+            "inhibitor": true,
+            "protein": true,
+            "disease": true,
+            "drug": true,
+            "undef": true
+        },
+        "customEdge": {
+            "activation": true,
+            "inhibition": true,
+            "association": true,
+            "reaction": true,
+            "cleavage": true,
+            "interaction": true
+        }
+    }
+
+
+    /*
+     * HELPER FUNCTIONS
+     */
+
+    // Error Handling
+    $scope.handleError = function(data,status, headers, config) {
+        $scope.error = true;
+        $scope.loading = false;
+    };
+    // Returns a list of the requested attribute of the selected nodes.
+    $scope.getSelected = function(attr) {
+        if (!$scope.cy) return [];
+        var selected = $scope.cy.$('node:selected');
+        var query = [];
+        selected.nodes().each(function(i,d) { query.push(d.data(attr)); });
+        return query;
+    };
+    // Appears to help create resources to add to the graph.
     $scope.createResource = function(uri, graph) {
         var entity = graph.getResource(uri,'uri');
         entity[$scope.ns.rdf('type')] = [
@@ -494,44 +453,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             graph.getResource($scope.ns.sio('material-entity'),'uri')
         ];
         return entity;
-    };
-
-    $scope.found = -1;          // How many edge connections found
-    $scope.once = false;        // Is this the first iteration?
-    $scope.query = "none";     
-    // Initial search call
-    $scope.addToGraph = function(query) {
-        $scope.loading = true;
-        $('#starting-box').css("display", "none");
-        $('#interface').removeClass("hidden");
-        $('#first-bfs').removeClass("hidden");
-        var g = new $.Graph();
-        $scope.createResource($scope.searchTermURIs[$.trim(query)],g);
-        $scope.query = query;
-        $scope.services.process(g,function(graph){
-            $scope.services.downstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
-        },$scope.graph,$scope.handleError);
-        $scope.cy.layout($scope.layout);
-        $scope.once = false;
-        $scope.found = -1;
-    };
-    $scope.getUpstream = function(query) {
-        $scope.loading = true;
-        var g = new $.Graph();
-        query.forEach(function(d) {
-            $scope.createResource(d,g);
-        });
-        // console.log(g.toJSON());
-        $scope.services.upstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
-    };
-    $scope.getDownstream = function(query) {
-        $scope.loading = true;
-        var g = new $.Graph();
-        query.forEach(function(d) {
-            $scope.createResource(d,g);
-        });
-        // console.log(g.toJSON());
-        $scope.services.downstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
     };
     // Used to replace non-working id URI with working URI
     $scope.newURI = function(oldURI) {
@@ -543,11 +464,76 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         } else if (source === "refseq") { return oldURI; }
         return "http://" + source + ".bio2rdf.org/describe/?url=" + encodeURIComponent(oldURI);
     };
-    // Used to get or create node from nodeMap. Node id was originally the res.uri
+
+
+    /*
+     * NODE FUNCTIONS
+     */
+
+    // Gets the details of a node by opening the uri in a new window.
+    $scope.getDetails = function(query) {
+        var g = new $.Graph();
+        query.forEach(function(uri) { window.open(uri); });
+    };
+    // Shows BFS animation starting from selected nodes
+    $scope.showBFS = function(query) {
+        $scope.bfsrun = true;
+        query.forEach(function(id) {
+            cy.elements().removeClass("highlighted");
+            var root = "#" + id;
+            var bfs = cy.elements().bfs(root, function(){}, true);
+            var i = 0;
+            var highlightNextEle = function(){
+              bfs.path[i].addClass('highlighted');
+              bfs.path[i].removeClass('faded');
+              if( i < bfs.path.length - 1){
+                i++;
+                if ($scope.bfsrun) {
+                    setTimeout(highlightNextEle, 50);
+                } else { i = bfs.path.length; }
+              }
+            };
+            highlightNextEle();
+        });
+    };
+    // Lock/unlock the selected elements
+    $scope.lock = function(query, lock) {
+        query.forEach(function(id) {
+            var node = "#" + id;
+            if (lock) { cy.$(node).lock(); }
+            else { cy.$(node).unlock(); }
+        });
+    }
+    // Gets incoming connections of the selected nodes
+    $scope.getUpstream = function(query) {
+        $scope.loading = true;
+        var g = new $.Graph();
+        query.forEach(function(d) {
+            $scope.createResource(d,g);
+        });
+        $scope.services.upstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
+    };
+    // Gets outgoing connections of the selected nodes
+    $scope.getDownstream = function(query) {
+        $scope.loading = true;
+        var g = new $.Graph();
+        query.forEach(function(d) {
+            $scope.createResource(d,g);
+        });
+        $scope.services.downstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
+    };
+
+    
+   
+    /* 
+     * CORE SEARCH FUNCTIONS
+     */
+    // Used to get node from nodeMap or to create a new node.
     $scope.getNode = function(res) {
         var node = $scope.nodeMap[res.uri];
         if (!node) {
             var newURI = $scope.newURI(res.uri);
+            // Creates a new node and adds it to the nodeMap
             node = $scope.nodeMap[res.uri] = {
                 group: "nodes",
                 data: {
@@ -562,10 +548,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             node.data.label = res[$scope.ns.rdfs('label')];
             if (res[$scope.ns.rdf('type')]) res[$scope.ns.rdf('type')].forEach(function(d) {
                 node.data.types[d.uri] = true;
-            })
-            node.data.shape = $scope.getShape(node.data.types);
-            node.data.size = $scope.getSize(node.data.types);
-            node.data.color = $scope.getColor(node.data.types);
+            });
+            var type = Object.keys(node.data.types);
+            node.data.shape = $scope.getNodeFeature("shape", type);
+            node.data.size = $scope.getNodeFeature("size", type);
+            node.data.color = $scope.getNodeFeature("color", type);
             node.data.linecolor = "#E1EA38";
             node.data.prob = 1;
         }
@@ -592,15 +579,16 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 elements.push(source);
                 elements.push(target);
                 var edgeTypes = d[$scope.ns.rdf('type')];
+                // Create the edge between source and target
                 var edge = {
                     group: "edges",
                     data: $().extend({}, d, {
                         id: d[$scope.ns.prov('wasDerivedFrom')][0].uri,
                         source: source.data.id,
                         target: target.data.id, 
-                        shape: edgeTypes ? $scope.edgeShapes[edgeTypes[0].uri] : 'none',
-                        types: (edgeTypes && !$scope.edgeTypes[edgeTypes[0].uri]) ? 'Interaction with Disease' : $scope.edgeTypes[edgeTypes[0].uri],
-                        color: (edgeTypes && !$scope.edgeColors[edgeTypes[0].uri]) ? otherColor : $scope.edgeColors[edgeTypes[0].uri],
+                        shape: $scope.getEdgeFeature("shape", edgeTypes[0].uri), 
+                        types: (edgeTypes && !$scope.edgeNames[edgeTypes[0].uri]) ? 'Interaction with Disease' : $scope.edgeNames[edgeTypes[0].uri],
+                        color: $scope.getEdgeFeature("color", edgeTypes[0].uri),
                         probability: d[$scope.ns.sio('probability-value')][0],
                         zscore: d[$scope.ns.sio('likelihood')][0],  // z-score-value
                         width: (d[$scope.ns.sio('likelihood')][0] * 4) + 1,
@@ -612,6 +600,22 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 elements.push(edge);
             });
         return elements;
+    };
+    // Starts the search for given elements and its nearest downstream neighbors
+    $scope.search = function(query) {
+        $('#initial').css("display", "none");
+        $('#interface, #legend, #mininterface').css("visibility", "visible");
+        $scope.loading = true;
+        var g = new $.Graph();
+        $scope.createResource($scope.searchTermURIs[$.trim(query)],g);
+        $scope.query = query;
+        // When the query is complete, sends the results to appendToGraph to asynchronously add new elements
+        $scope.services.process(g,function(graph){
+            $scope.services.downstream(g,$scope.appendToGraph,$scope.graph,$scope.handleError);
+        },$scope.graph,$scope.handleError);
+        $scope.once = false;
+        $scope.found = -1;
+        $scope.cy.layout($scope.layout);
     };
     // Adds elements to graph.
     $scope.appendToGraph = function(result) {
@@ -627,123 +631,19 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.once = true;
         }
         $scope.cy.add(elements);
-        if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
-        $scope.$apply(function(){ 
+        setTimeout(function(){
             $scope.cy.layout($scope.layout);
-            $scope.loading = false;
-        });
-        $("#button-box").addClass('hidden');
+            $scope.$apply(function(){ $scope.loading = false; });
+        }, 1000);
         $scope.loaded = result.resources.length;
     };
-
+    // For custom query
     $scope.currStep = 0;
     $scope.prevEle = [];
-
     $scope.traces = {};
-
-    $scope.diseaseToGraph = function(result) {
-        // Source, target, edge
-        var elements = $scope.getElements(result);
-        // Populated with [source, target, edge] of disease edge interactions as well as the chain needed to find that disease
-        var diseaseEle = [];
-        // Populated with [source, target, edge] of non-disease edge interactions
-        var notDiseaseEle = [];
-
-        // Calculates the probability of the connection
-        var probOfConnection = function(source) {
-            var prev = $scope.currStep - 1;
-            if (prev < 0) { return 1; }
-            // Looking at all targets
-            for (j = 1; j < $scope.prevEle[prev].length; j++) {
-                if (source === $scope.prevEle[prev][j].data.id) {
-                    return $scope.prevEle[prev][j].data.prob;
-                }
-            }
-        };
-
-        // Split elements in graph to disease or non-disease. Assumes all diseases are targets.
-        for (i = 1; i < elements.length; i+=3) {
-            var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
-            // console.log(prob);
-            if (prob >= $scope.probThreshold) {
-                elements[i].data.prob = prob;
-                var trace = [elements[i-1]];
-                if ($scope.traces[elements[i-1].data.uri] != null) {
-                    trace = $scope.traces[elements[i-1].data.uri].slice();
-                } 
-                trace.push(elements[i+1]);
-                trace.push(elements[i]);
-                $scope.traces[elements[i].data.uri] = trace;
-                if (elements[i].data.types['http://semanticscience.org/resource/SIO_010056']) {
-                    diseaseEle.push(elements[i]);
-                }
-                else {
-                    notDiseaseEle.push(elements[i-1]);
-                    notDiseaseEle.push(elements[i]);
-                    notDiseaseEle.push(elements[i+1]);
-                }
-            }
-        }
-        // Saves the non-disease for linking further searches
-        $scope.prevEle[$scope.currStep] = notDiseaseEle;
-
-        var resultElements = [];
-        // For all diseases found, create chain to original selected node source
-        diseaseEle.forEach( function(element) {
-            // console.log("adding trace",$scope.traces[element.data.uri]);
-            resultElements = resultElements.concat($scope.traces[element.data.uri]);
-        });
-
-        $scope.$apply(function(){ $scope.cy.add(resultElements); });
-
-        // If the search is not the last...
-        if($scope.currStep < $scope.numSearch) {
-            var targets = [];
-            for (i = 1; i < notDiseaseEle.length; i+=3) {
-                targets[notDiseaseEle[i].data.uri] = true;
-            }
-            $scope.currStep += 1;
-            // Need to do second downstream on all other nodes and then look for diseases. 
-            var g = new $.Graph();
-            Object.keys(targets).forEach(function(d) {
-                $scope.createResource(d,g);
-            });
-            $scope.services.downstream(g, $scope.diseaseToGraph, $scope.graph, $scope.handleError);
-        }
-        else {
-            if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
-            $scope.$apply(function(){
-                $scope.cy.layout($scope.layout);
-                $scope.loading = false;
-            });
-            $("#button-box").addClass('hidden');
-            $scope.loaded = result.resources.length;
-            return;
-        }
-    }
-
-
-    $scope.numSearch = 1;
-    $scope.probThreshold = 0.95;
-    $scope.nodefilter = {
-        activator: true,
-        inhibitor: true,
-        protein: true,
-        disease: true,
-        drug: true,
-        undef: true
-    }
-    $scope.edgefilter = {
-        activation: true,
-        inhibition: true,
-        association: true,
-        reaction: true,
-        cleavage: true,
-        interaction: true
-    }
     $scope.check = "downstream"
-    $scope.customQueryDSToGraph = function(result) {
-        console.log("Going downstream");
+    $scope.getCustomResults = function(result) {
+        console.log(result);
         // Source, target, edge
         var elements = $scope.getElements(result);
 
@@ -764,16 +664,16 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             }
         };
 
-        var checkConnection = function(target, edge) {
+        var checkConnection = function(x, edge) {
             for (var nodetype in $scope.nodefilter) {
                 // If the node type needs to be filtered out...
                 if (!$scope.nodefilter[nodetype]) {
-                    if ((nodetype == "activator" && target["http://semanticscience.org/resource/activator"]) 
-                        || (nodetype == "inhibitor" && target["http://semanticscience.org/resource/inhibitor"])
-                        || (nodetype == "protein" && target["http://semanticscience.org/resource/protein"])
-                        || (nodetype == "disease" && target["http://semanticscience.org/resource/SIO_010056"])
-                        || (nodetype == "drug" && target["http://semanticscience.org/resource/drug"])
-                        || (nodetype == "undef" && Object.getOwnPropertyNames(target).length === 0)) {
+                    if ((nodetype == "activator" && x["http://semanticscience.org/resource/activator"]) 
+                        || (nodetype == "inhibitor" && x["http://semanticscience.org/resource/inhibitor"])
+                        || (nodetype == "protein" && x["http://semanticscience.org/resource/protein"])
+                        || (nodetype == "disease" && x["http://semanticscience.org/resource/SIO_010056"])
+                        || (nodetype == "drug" && x["http://semanticscience.org/resource/drug"])
+                        || (nodetype == "undef" && Object.getOwnPropertyNames(x).length === 0)) {
                         return false;
                     }
                 }
@@ -795,154 +695,68 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         };
 
         // Split elements in graph to relevant or non-relevant. 
-        for (i = 1; i < elements.length; i+=3) {
-            var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
-            if (prob >= $scope.probThreshold) {
-                elements[i].data.prob = prob;
-                var trace = [elements[i-1]];
-                if ($scope.traces[elements[i-1].data.uri] != null) {
-                    trace = $scope.traces[elements[i-1].data.uri].slice();
-                } 
-                trace.push(elements[i+1]);
-                trace.push(elements[i]);
-                $scope.traces[elements[i].data.uri] = trace;
+        if ($scope.check == "downstream") {
+            for (i = 1; i < elements.length; i+=3) {
+                var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
+                if (prob >= $scope.probThreshold) {
+                    elements[i].data.prob = prob;
+                    var trace = [elements[i-1]];
+                    if ($scope.traces[elements[i-1].data.uri] != null) {
+                        trace = $scope.traces[elements[i-1].data.uri].slice();
+                    } 
+                    trace.push(elements[i+1]);
+                    trace.push(elements[i]);
+                    $scope.traces[elements[i].data.uri] = trace;
 
-                satisfies = checkConnection(elements[i].data.types, elements[i+1].data.types)
-                if (satisfies) {
-                    filteredEle.push(elements[i]);
-                    // Add if the data.type isn't a disease
-                    if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
+                    satisfies = checkConnection(elements[i].data.types, elements[i+1].data.types)
+                    if (satisfies) {
+                        filteredEle.push(elements[i]);
+                        // Add if the data.type isn't a disease
+                        if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
+                            notfilteredEle.push(elements[i-1]);
+                            notfilteredEle.push(elements[i]);
+                            notfilteredEle.push(elements[i+1]);
+                        }
+                    }
+                    else {
                         notfilteredEle.push(elements[i-1]);
                         notfilteredEle.push(elements[i]);
                         notfilteredEle.push(elements[i+1]);
                     }
                 }
-                else {
-                    notfilteredEle.push(elements[i-1]);
-                    notfilteredEle.push(elements[i]);
-                    notfilteredEle.push(elements[i+1]);
-                }
             }
-        }
-        // Saves the non-disease for linking further searches
-        $scope.prevEle[$scope.currStep] = notfilteredEle;
+        } else {
+            for (i = 0; i < elements.length; i+=3) {
+                var prob = probOfConnection(elements[i+1].data.id) * elements[i+2].data.probability;
+                if (prob >= $scope.probThreshold) {
+                    elements[i].data.prob = prob;
+                    var trace = [elements[i+1]];
+                    if ($scope.traces[elements[i+1].data.uri] != null) {
+                        trace = $scope.traces[elements[i+1].data.uri].slice();
+                    } 
+                    trace.push(elements[i+2]);
+                    trace.push(elements[i]);
+                    $scope.traces[elements[i].data.uri] = trace;
 
-        var resultElements = [];
-        // For all diseases found, create chain to original selected node source
-        filteredEle.forEach( function(element) {
-            // console.log("adding trace",$scope.traces[element.data.uri]);
-            resultElements = resultElements.concat($scope.traces[element.data.uri]);
-        });
-
-        $scope.$apply(function(){ $scope.cy.add(resultElements); });
-
-        // If the search is not the last...
-        if($scope.currStep < $scope.numSearch) {
-            var targets = {};
-            for (i = 1; i < notfilteredEle.length; i+=3) {
-                targets[notfilteredEle[i].data.uri] = true;
-            }
-            $scope.currStep += 1;
-            // Need to do second downstream on all other nodes and then look for diseases. 
-            var g = new $.Graph();
-            Object.keys(targets).forEach(function(d) {
-                $scope.createResource(d,g);
-            });
-            $scope.services.downstream(g, $scope.customQueryDSToGraph, $scope.graph, $scope.handleError);
-        }
-        else {
-            if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
-            $scope.$apply(function(){
-                $scope.cy.layout($scope.layout);
-                $scope.loading = false;
-            });
-            $("#button-box").addClass('hidden');
-            $scope.loaded = result.resources.length;
-            return;
-        }
-    }
-    $scope.customQueryUSToGraph = function(result) {
-        console.log("Going upstream");
-        // Source, target, edge
-        var elements = $scope.getElements(result);
-
-        // Populated with [source, target, edge] of filtered interactions as well as the chain needed to find them
-        var filteredEle = [];
-        // Populated with [source, target, edge] of potentially not-relevant edge interactions
-        var notfilteredEle = [];
-
-        // Calculates the probability of the connection
-        var probOfConnection = function(source) {
-            var prev = $scope.currStep - 1;
-            if (prev < 0) { return 1; }
-            // Looking at all targets
-            for (j = 1; j < $scope.prevEle[prev].length; j++) {
-                if (source === $scope.prevEle[prev][j].data.id) {
-                    return $scope.prevEle[prev][j].data.prob;
-                }
-            }
-        };
-
-        var checkConnection = function(source, edge) {
-            for (var nodetype in $scope.nodefilter) {
-                // If the node type needs to be filtered out...
-                if (!$scope.nodefilter[nodetype]) {
-                    if ((nodetype == "activator" && source["http://semanticscience.org/resource/activator"]) 
-                        || (nodetype == "inhibitor" && source["http://semanticscience.org/resource/inhibitor"])
-                        || (nodetype == "protein" && source["http://semanticscience.org/resource/protein"])
-                        || (nodetype == "disease" && source["http://semanticscience.org/resource/SIO_010056"])
-                        || (nodetype == "drug" && source["http://semanticscience.org/resource/drug"])
-                        || (nodetype == "undef" && Object.getOwnPropertyNames(source).length === 0)) {
-                        return false;
+                    satisfies = checkConnection(elements[i].data.types, elements[i+2].data.types)
+                    if (satisfies) {
+                        filteredEle.push(elements[i]);
+                        // Add if the data.type isn't a disease
+                        if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
+                            notfilteredEle.push(elements[i]);
+                            notfilteredEle.push(elements[i+1]);
+                            notfilteredEle.push(elements[i+2]);
+                        }
                     }
-                }
-            }
-            for (var edgetype in $scope.edgefilter) {
-                // If the edge type needs to be filtered out...
-                if (!$scope.edgefilter[edgetype]) {
-                    if ((edgetype == "activation" && (edge=="Agonist" || edge=="Cofactor" || edge=="Metabolite" || edge=="Receptor Agnoist Activity")) 
-                        || (edgetype == "inhibition" && (edge=="Antagonist" || edge=="Receptor Inhibitor Activity"))
-                        || (edgetype == "association" && (edge=="Physical Association" || edge=="Aggregation" || edge=="Colocalization")) 
-                        || (edgetype == "reaction" && edge=="Phosphorylation Reaction") 
-                        || (edgetype == "cleavage" && (edge=="Protein Cleavage" || edge=="Cleavage Reaction")) 
-                        || (edgetype == "interaction" && (edge=="Molecule Connection" || edge=="Effector" || edge=="Direct Interaction" || edge=="Association"))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        };
-
-        // Split elements in graph to relevant or non-relevant. 
-        for (i = 0; i < elements.length; i+=3) {
-            var prob = probOfConnection(elements[i+1].data.id) * elements[i+2].data.probability;
-            if (prob >= $scope.probThreshold) {
-                elements[i].data.prob = prob;
-                var trace = [elements[i+1]];
-                if ($scope.traces[elements[i+1].data.uri] != null) {
-                    trace = $scope.traces[elements[i+1].data.uri].slice();
-                } 
-                trace.push(elements[i+2]);
-                trace.push(elements[i]);
-                $scope.traces[elements[i].data.uri] = trace;
-
-                satisfies = checkConnection(elements[i].data.types, elements[i+2].data.types)
-                if (satisfies) {
-                    filteredEle.push(elements[i]);
-                    // Add if the data.type isn't a disease
-                    if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
+                    else {
                         notfilteredEle.push(elements[i]);
                         notfilteredEle.push(elements[i+1]);
                         notfilteredEle.push(elements[i+2]);
                     }
                 }
-                else {
-                    notfilteredEle.push(elements[i]);
-                    notfilteredEle.push(elements[i+1]);
-                    notfilteredEle.push(elements[i+2]);
-                }
             }
         }
+
         // Saves the non-disease for linking further searches
         $scope.prevEle[$scope.currStep] = notfilteredEle;
 
@@ -967,7 +781,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             Object.keys(targets).forEach(function(d) {
                 $scope.createResource(d,g);
             });
-            $scope.services.upstream(g, $scope.customQueryUSToGraph, $scope.graph, $scope.handleError);
+            if ($scope.check == "downstream"){
+                $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+            } else {$scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+
+            }
         }
         else {
             if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
@@ -975,89 +793,45 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 $scope.cy.layout($scope.layout);
                 $scope.loading = false;
             });
-            $("#button-box").addClass('hidden');
             $scope.loaded = result.resources.length;
             return;
         }
     }
-    $scope.getTwoStep = function(query) {
-        $("#customquery").removeClass("hidden");
-        $("#customquery").dialog({
-            resizable: false,
-            width: 550,
-            height: 400,
-            modal: true,
-            buttons: {
-                "Continue": function() {
-                    $( this ).dialog( "close" );
-                    $scope.numSearch = parseInt($scope.numSearch);
-                    $scope.probThreshold = parseFloat($scope.probThreshold);
-                    $scope.traces = {};
-                    $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
-                    $scope.currStep = 0;
-                    $scope.prevEle = new Array($scope.numSearch + 1);
-                    $scope.$apply(function(){ $scope.loading = true; });
-                    var g = new $.Graph();
-                    query.forEach(function(d) { $scope.createResource(d,g); });
-                    if ($scope.check == "downstream") { 
-                        $scope.services.downstream(g, $scope.customQueryDSToGraph, $scope.graph, $scope.handleError);
-                    }
-                    else if ($scope.check == "upstream") {
-                        $scope.services.upstream(g, $scope.customQueryUSToGraph, $scope.graph, $scope.handleError);
-                    }
-                    // $scope.services.downstream(g, $scope.diseaseToGraph, $scope.graph, $scope.handleError);
-                },
-                Cancel: function() { $( this ).dialog( "close" ); }
-            }
-        });
-    }
-
-    // Prevents negative numbers
-    $("#numSearch").keypress(function(event) {
-      if ( event.which == 45 || event.which == 189 ) {
-          event.preventDefault();
-       }
-    });
-
-    // Functionality for starting-page help
-    $('.help').mouseover(function(){ $('.help-info').show(); });
-    $('.help').mouseleave(function(){ $('.help-info').hide(); });
-
-    // Hover functionality for selected node buttons
-    $('#details').mouseover(function() { $('#details-hover').show(); });
-    $('#details').mouseleave(function() { $('#details-hover').hide(); });
-    $('#bfs').mouseover(function() { $('#bfs-hover').show(); });
-    $('#bfs').mouseleave(function() { $('#bfs-hover').hide(); });
-    $('#upstream').mouseover(function() { $('#upstream-hover').show(); });
-    $('#upstream').mouseleave(function() { $('#upstream-hover').hide(); });
-    $('#downstream').mouseover(function() { $('#downstream-hover').show(); });
-    $('#downstream').mouseleave(function() { $('#downstream-hover').hide(); });
-    $('#twoStep').mouseover(function() { $('#twoStep-hover').show(); });
-    $('#twoStep').mouseleave(function() { $('#twoStep-hover').hide(); });
 
 
-    // Toggle visibility function for top left button
-    $("#min-search").click(function() {
-        $("#max-search").toggle();
-        if($('#min-search').html() === '<i class="fa fa-chevron-circle-left"></i>') {
-            $('#min-search').html('<i class="fa fa-chevron-circle-right"></i>');
-             $('#search-box').css("width", "35px");
-             $('#search-box').css("height", "50px");        
-        }
-        else {
-            $('#min-search').html('<i class="fa fa-chevron-circle-left"></i>');
-            $('#search-box').css("width", "355px");
-            $('#search-box').css("height", "");
-        }
-    });
-
+    /*
+     *  GUI INTERACTIONS
+     */
+    // Help hover 
+    $( "#help" ).hover(
+        function() { $('#help-info').show();}, 
+        function() { $('#help-info').hide();}
+    );
+    // Create tab functionality
+    $('#guitabs a').click(function (e) {
+      e.preventDefault()
+      $(this).tab('show')
+    })
     // Starts new Cytoscape visualization instead of adding to existing
     $(".search-btn").click(function() {
-        $scope.createGraph();
-        $scope.addToGraph($scope.searchTerms);
+        $scope.cy.load();
+        $scope.search($scope.searchTerms);
+    });
+    // Minimize search bar
+    $('#mininterface').click(function() {
+        if ($('#mininterface').html() === '<i class="fa fa-chevron-circle-down"></i> Show Options') {
+            $("#interface").css("display", "block"); 
+            $("#mininterface").html('<i class="fa fa-chevron-circle-up"></i> Hide Options');        
+            $scope.cy.resize();
+        }
+        else {
+            $("#interface").css("display", "none"); 
+            $("#mininterface").html('<i class="fa fa-chevron-circle-down"></i> Show Options');
+            $scope.cy.resize();
+        }
     });
 
-    // Options functionality
+    // Zoom
     $("#zoom-fit").click(function() { $scope.cy.fit(50); });
     $("#zoom-in").click(function() {
         var midx = $(window).width() / 2;
@@ -1077,47 +851,38 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             });
         }
     });
-
-    $("#show-lbl").click(function() {
-        $scope.showLabel = true;
-        $scope.cy.elements().removeClass('hideLabel');
+    // Panning vs. Multiselect
+    $('#panning').click(function(){
+        $scope.cy.boxSelectionEnabled(false); 
+        $('#enablemulti').html("Enable Panning");
     });
-    $("#hide-lbl").click(function() {
-        $scope.showLabel = false;
-        $scope.cy.elements().addClass('hideLabel');
+    $('#multiselect').click(function(){ 
+        $scope.cy.boxSelectionEnabled(true); 
+        $('#enablemulti').html("Enable Multiple Selection");
     });
-
-    $("#bg-dark").click(function() {
-        $('body').css("background", 'url("../img/congruent_outline.png")');
+    // Background
+    $("#bgdark").click(function() {
+        $('body').css("background", 'url("../img/simple_dashed_@2X.png")');
     });
-    $("#bg-light").click(function() {
-        $('body').css("background", 'white');
+    $("#bglight").click(function() {
+        $('body').css("background", 'url("../img/agsquare_@2X.png")');
     });
-
-    // First BFS function
-    /*$('#first-bfs').click(function() {
-        var found = false;
-        $scope.cy.nodes().each(function(i, ele){
-            if (!i) {
-                cy.elements().removeClass("highlighted");
-                var root = "#" + ele.id();
-                var bfs = cy.elements().bfs(root, function(){}, true);
-                if (bfs.path.length > 1) {
-                    var i = 0;
-                    var highlightNextEle = function(){
-                      bfs.path[i].addClass('highlighted');
-                      bfs.path[i].removeClass('faded');
-                      
-                      if( i < bfs.path.length - 1){
-                        i++;
-                        setTimeout(highlightNextEle, 100);
-                      }
-                    };
-                    highlightNextEle();
-                    found = true;
-                }
-            }
-        });
+    // Custom Query Submit
+    $("#submitCustom").click(function() {
+        $scope.numSearch = parseInt($scope.numSearch);
+        $scope.probThreshold = parseFloat($scope.probThreshold);
+        if ($scope.numSearch < 0 || $scope.probThreshold < 0) { return; }
+        $scope.traces = {};
+        $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
+        $scope.currStep = 0;
+        $scope.prevEle = new Array($scope.numSearch + 1);
+        $scope.$apply(function(){ $scope.loading = true; });
+        var g = new $.Graph();
+        $scope.getSelected('uri').forEach(function(d) { $scope.createResource(d,g); });
+        if ($scope.check == "downstream") { 
+            $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        } else if ($scope.check == "upstream") {
+            $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        }
     });
-    */
 })
