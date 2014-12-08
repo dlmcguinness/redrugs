@@ -1,13 +1,8 @@
 PREFIX np: <http://www.nanopub.org/nschema#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sio: <http://semanticscience.org/resource/>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX void: <http://rdfs.org/ns/void#>
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX pav: <http://purl.org/pav/2.0/>
-PREFIX prv: <http://purl.org/net/provenance/ns#>
-PREFIX prov: <http://www.w3.org/ns/prov#>
-PREFIX dctypes: <http://purl.org/dc/dcmitype/>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
 
@@ -51,18 +46,20 @@ insert{
 }
 where{
   { service <http://cu.drugbank.bio2rdf.org/sparql> {
-    select distinct *{
-      ?association <http://bio2rdf.org/drugbank_vocabulary:drug> ?drug .
-      ?drug a <http://bio2rdf.org/drugbank_vocabulary:Drug> .
-      ?association <http://bio2rdf.org/drugbank_vocabulary:target> ?target .
-      ?target a <http://bio2rdf.org/drugbank_vocabulary:Target> .
-      ?association <http://bio2rdf.org/drugbank_vocabulary:action> ?action . 
-      ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-      ?association <http://bio2rdf.org/drugbank_vocabulary:reference> ?reference . 
-      ?reference a <http://bio2rdf.org/pubmed_vocabulary:Resource> .
-      ?reference <http://rdfs.org/ns/void#inDataset> ?source.
-	  # FILTER (?association = <http://bio2rdf.org/drugbank_resource:DB00247_BE0000650>) #for testing
-    }
+      select distinct *{
+        ?association <http://bio2rdf.org/drugbank_vocabulary:drug> ?drug .
+        ?drug a <http://bio2rdf.org/drugbank_vocabulary:Drug> .
+        optional { ?drug <http://bio2rdf.org/drugbank_vocabulary:x-uniprot> ?drug_uniprot .}
+        ?association <http://bio2rdf.org/drugbank_vocabulary:target> ?target .
+        ?target a <http://bio2rdf.org/drugbank_vocabulary:Target> .
+        optional { ?target <http://bio2rdf.org/drugbank_vocabulary:x-uniprot> ?target_uniprot .}
+        ?association <http://bio2rdf.org/drugbank_vocabulary:action> ?action . 
+        ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
+        ?association <http://bio2rdf.org/drugbank_vocabulary:reference> ?reference . 
+        ?reference a <http://bio2rdf.org/pubmed_vocabulary:Resource> .
+        ?reference <http://rdfs.org/ns/void#inDataset> ?source.
+	    # FILTER (?association = <http://bio2rdf.org/drugbank_resource:DB00247_BE0000650>) #for testing
+      }
     } 
   }
     BIND(STRAFTER(str(?association),"http://bio2rdf.org/") AS ?id)
