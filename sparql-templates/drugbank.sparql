@@ -22,13 +22,14 @@ insert{
 		?association a sio:SIO_000897 . #SIO_000897 means association, cannot find a specific SIO term for drug-target relation
 		?association sio:SIO_000628 ?drug .
 		?drug a dv:Drug .
+        ?drug dv:x-uniprot ?drug_uniprot .
 		?association sio:SIO_000628 ?target .
 		?target a dv:Target .
+        ?target dv:x-uniprot ?target_uniprot .
 		?association dv:action ?action . 
-        ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-        ?association <http://bio2rdf.org/drugbank_vocabulary:action> ?action . 
-        ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-
+        ?action a dv:Resource .
+        ?association dv:action ?action . 
+        ?action a dv:Resource .
 	}
 	GRAPH ?provenanceGraph
 	{
@@ -47,17 +48,17 @@ insert{
 where{
   { service <http://cu.drugbank.bio2rdf.org/sparql> {
       select distinct *{
-        ?association <http://bio2rdf.org/drugbank_vocabulary:drug> ?drug .
-        ?drug a <http://bio2rdf.org/drugbank_vocabulary:Drug> .
-        optional { ?drug <http://bio2rdf.org/drugbank_vocabulary:x-uniprot> ?drug_uniprot .}
-        ?association <http://bio2rdf.org/drugbank_vocabulary:target> ?target .
-        ?target a <http://bio2rdf.org/drugbank_vocabulary:Target> .
-        optional { ?target <http://bio2rdf.org/drugbank_vocabulary:x-uniprot> ?target_uniprot .}
-        ?association <http://bio2rdf.org/drugbank_vocabulary:action> ?action . 
-        ?action a <http://bio2rdf.org/drugbank_vocabulary:Resource> .
-        ?association <http://bio2rdf.org/drugbank_vocabulary:reference> ?reference . 
-        ?reference a <http://bio2rdf.org/pubmed_vocabulary:Resource> .
-        ?reference <http://rdfs.org/ns/void#inDataset> ?source.
+          ?association dv:drug ?drug .
+          ?drug a dv:Drug .
+             optional { ?drug dv:x-uniprot ?drug_uniprot }
+          ?association dv:target ?target .
+          ?target a dv:Target .
+             optional { ?target dv:x-uniprot ?target_uniprot }
+          ?association dv:action ?action . 
+          ?action a dv:Resource .
+          ?association dv:reference ?reference . 
+          ?reference a <http://bio2rdf.org/pubmed_vocabulary:Resource> .
+          ?reference <http://rdfs.org/ns/void#inDataset> ?source.
 	    # FILTER (?association = <http://bio2rdf.org/drugbank_resource:DB00247_BE0000650>) #for testing
       }
     } 
