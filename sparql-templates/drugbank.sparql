@@ -50,10 +50,10 @@ where{
       select distinct *{
           ?association dv:drug ?drug .
           ?drug a dv:Drug .
-             optional { ?drug dv:x-uniprot ?drug_uniprot }
+          #?drug dv:x-uniprot ?drug_uniprot . // drug uniprot info is not necessary
           ?association dv:target ?target .
           ?target a dv:Target .
-             optional { ?target dv:x-uniprot ?target_uniprot }
+          ?target dv:x-uniprot ?target_uniprot .
           ?association dv:action ?action . 
           ?action a dv:Resource .
           ?association dv:reference ?reference . 

@@ -5,6 +5,7 @@ PREFIX void: <http://rdfs.org/ns/void#>
 PREFIX pav: <http://purl.org/pav/2.0/>
 PREFIX dcterms: <http://purl.org/dc/terms/>
 PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
+PREFIX prov: <http://www.w3.org/ns/prov#>
 
 insert{
 	GRAPH ?nanopub
@@ -30,7 +31,9 @@ insert{
 	}
 	GRAPH ?provenanceGraph
 	{
-        ?assertionGraph iv:method ?method .
+        ?assertionGraph prov:wasGeneratedBy [   
+                             a prov:Activity, ?method
+        ].
 		?assertionGraph sio:SIO_000772 ?article . # specific paper
 		?assertionGraph sio:SIO_000253 ?dataset . # which dataset it comes from
 	}
