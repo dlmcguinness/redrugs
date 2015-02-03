@@ -132,34 +132,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         cy.elements().removeClass('faded');
                         cy.elements().removeClass("highlighted");
                         $scope.bfsrun = false;
-                        $('#tabs a[href="#legend"]').tab('show'); 
                         $("#edgeask").removeClass('hidden');
                         $('#edgeoverview').html("");
                         $('#edgetable').html("");
                         $scope.neighborhood = [];
                     }
-                });
-
-                // When a node is selected
-                cy.on('select', 'node', function(e){
-                    var node = e.cyTarget; 
-                    $scope.bfsrun = false;
-                    $('#tabs a[href="#explore"]').tab('show'); 
-                    $("#edgeask").removeClass('hidden');
-                    $('#edgeoverview').html("");
-                    $('#edgetable').html("");
-
-                    // Fade outside of neighborhood of all selected elements
-                    var neighborhood = node.neighborhood().add(node);
-                    $scope.neighborhood.push(neighborhood);
-                    if ($scope.neighborhood.length > 0) {
-                        cy.elements().addClass('faded');
-                        for (var n in $scope.neighborhood) {
-                            $scope.neighborhood[n].removeClass('faded');
-                        }
-                    }
-                    // socket.send((pos.x).toFixed(2));
-                    // socket.send((pos.y).toFixed(2));
                 });
 
                 // When an edge is selected
@@ -214,6 +191,28 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     $('#tabs a[href="#edgeinfo"]').tab('show'); 
                     $("#edgeask").addClass('hidden');
                 });
+
+                // When a node is selected
+                cy.on('select', 'node', function(e){
+                    var node = e.cyTarget; 
+                    $scope.bfsrun = false;
+                    $('#tabs a[href="#explore"]').tab('show'); 
+                    $("#edgeask").removeClass('hidden');
+                    $('#edgeoverview').html("");
+                    $('#edgetable').html("");
+
+                    // Fade outside of neighborhood of all selected elements
+                    var neighborhood = node.neighborhood().add(node);
+                    $scope.neighborhood.push(neighborhood);
+                    if ($scope.neighborhood.length > 0) {
+                        cy.elements().addClass('faded');
+                        for (var n in $scope.neighborhood) {
+                            $scope.neighborhood[n].removeClass('faded');
+                        }
+                    }
+                    // socket.send((pos.x).toFixed(2));
+                    // socket.send((pos.y).toFixed(2));
+                });
             }
         });
     }
@@ -245,7 +244,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     /* 
      * URI MAPPINGS 
      */
-
     // Maps each type of edge interaction with its name.
     $scope.edgeNames = {
         "http://purl.obolibrary.org/obo/CHEBI_48705": "Agonist",                   
@@ -604,7 +602,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     // Starts the search for given elements and its nearest downstream neighbors
     $scope.search = function(query) {
         $('#initial').css("display", "none");
-        $('#interface, #legend, #mininterface').css("visibility", "visible");
+        $('#interface, #explore, #mininterface').css("visibility", "visible");
         $scope.loading = true;
         var g = new $.Graph();
         $scope.createResource($scope.searchTermURIs[$.trim(query)],g);
@@ -636,6 +634,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.$apply(function(){ $scope.loading = false; });
         }, 1000);
         $scope.loaded = result.resources.length;
+        $scope.cy.resize();
     };
     // For custom query
     $scope.currStep = 0;
@@ -665,9 +664,9 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         };
 
         var checkConnection = function(x, edge) {
-            for (var nodetype in $scope.nodefilter) {
+            for (var nodetype in $scope.filter["customNode"]) {
                 // If the node type needs to be filtered out...
-                if (!$scope.nodefilter[nodetype]) {
+                if (!$scope.filter["customNode"][nodetype]) {
                     if ((nodetype == "activator" && x["http://semanticscience.org/resource/activator"]) 
                         || (nodetype == "inhibitor" && x["http://semanticscience.org/resource/inhibitor"])
                         || (nodetype == "protein" && x["http://semanticscience.org/resource/protein"])
@@ -678,9 +677,9 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     }
                 }
             }
-            for (var edgetype in $scope.edgefilter) {
+            for (var edgetype in $scope.filter["customEdge"]) {
                 // If the edge type needs to be filtered out...
-                if (!$scope.edgefilter[edgetype]) {
+                if (!$scope.filter["customEdge"][edgetype]) {
                     if ((edgetype == "activation" && (edge=="Agonist" || edge=="Cofactor" || edge=="Metabolite" || edge=="Receptor Agnoist Activity")) 
                         || (edgetype == "inhibition" && (edge=="Antagonist" || edge=="Receptor Inhibitor Activity"))
                         || (edgetype == "association" && (edge=="Physical Association" || edge=="Aggregation" || edge=="Colocalization")) 

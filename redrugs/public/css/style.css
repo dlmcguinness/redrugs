@@ -25,6 +25,7 @@ form { margin: 0; padding: 0; }
 .alert { 
   font-size: 11px;
   padding: 0.5em !important;
+  margin: 0;
 }
 .btn-group + .btn-group { margin: none; }
 .col-md-12, .col-md-9, .col-md-3 { padding: 0; }
@@ -87,12 +88,16 @@ form { margin: 0; padding: 0; }
   border-bottom: 1px solid #f1c40f;
   background-color: white;
 }
-#interface h3 {
+#interface h3, #interface h4 {
   font-family: 'Muli', sans-serif;
   text-transform: uppercase;
   font-size: 1em;
   line-height: 1.5em;
   display: inline-block;
+}
+#interface h3 {
+  border-bottom: 1px solid #f1c40f;
+  margin-bottom: 0.5em;
   margin: 5px 1em 0 0;
 }
 #search {
@@ -118,6 +123,24 @@ form { margin: 0; padding: 0; }
 }
 .nav {
   margin-bottom: 0;
+  border-top: 1px solid #DDD;
+  border-bottom: 1px solid #DDD;
+  padding: 0.5em 0;
+}
+.nav-stacked {
+  padding: 0.5em;
+}
+.nav-stacked li a {
+  width: 50% !important;
+  float: left !important;
+}
+.nav-pills > li > a {
+    padding: 0.5em 1em !important;
+    margin: 0 !important; 
+    border-radius: 0px;
+}
+.nav-pills.nav-stacked > li > a {
+    margin-bottom: 0px;
 }
 .tabs {
   padding-bottom: 1em;
@@ -133,6 +156,9 @@ form { margin: 0; padding: 0; }
 /* 
  * EXPLORE
  */
+#explore, #mininterface {
+  visibility: hidden; 
+}
 #explore label, #explore input, #explore li {
   font-size: 12px;
 }
@@ -143,15 +169,28 @@ form { margin: 0; padding: 0; }
   width: 50px;
   height: 2em;
 }
+#explore .btn-wrap {
+  margin-top: 0.5em !important;
+}
+#explore .space {
+  margin-top: 1.5em;
+}
+#explore .tab-pane {
+  margin: 0 !important;
+}
+#explore h4 {
+  margin: 0;
+}
 #panning, #multiselect, #bgdark, #bglight {
   font-size: 10px;
   line-height: 1.5em !important;
 }
 #accordion {
-  margin-top: 1em;
+  margin-top: 0.5em;
 }
 .panel-heading {
   padding: 0.5em 1em;
+  background-color: #f1c40f !important;
 }
 .panel-group {
   margin: 0;
@@ -164,29 +203,27 @@ form { margin: 0; padding: 0; }
   display: inline-block;
   margin-right: 1em;
 }
-#nodecustom h3, #edgecustom h3 {
-  font-size: 0.8em !important;
-  display: inline-block;
-  min-width: 90px;
+.custom h3 {
+  font-size: 0.8em;
+  display: block !important;
 }
-#othercustom input[type=text] {
-  margin-right: 1em;
-}
-#edgecustom {
-  margin-bottom: 1em;
-}
-#customquery p {
-  margin: 5px 0 1em 0;
-  padding: 0;
-  font-size: 12px;
+.custom p {
+  margin-top: 1em;
 }
 #submitCustom {
+  margin: 0.5em;
   float: right;
 }
 
 /* 
  * EDGE DETAILS
  */
+#edgeask, #edgeoverview {
+  font-size: 12px;
+}
+#edgetable {
+  font-size: 10px;
+}
 #dbref {
   margin: 0; 
 }
@@ -199,35 +236,53 @@ form { margin: 0; padding: 0; }
   padding:0 10px 1em 0;
 }
 
-
 /* 
  * OPTIONS 
  */
 #layout {
-  margin: 0 0 0.5em 0;
+  margin: 0.5em 0;
 }
 #layout h3, #layout span {
   position: relative;
-  top: 4px;
+}
+#layout h3 {
+  top: 2px;
+  margin-right: 50%;
+}
+#layout .form-group {
+  width: 49%;
+  margin: 0;
+  display: inline-block;
+}
+#layout .space {
+  margin-top: 0.5em;
 }
 #layout input {
   line-height: 1.5em;
-  margin-top: 7px;
+  margin-top: 0px;
 }
 #layout span {
   padding: 0 10px 0 0;
+  font-size: 12px;
+}
+#colorbg, #layout-btn {
+  float: right;
+}
+#layout-btn {
+  margin-bottom: 1em;
 }
 
 /* 
  * HELP AND ABOUT
  */
+#faq h3, #about h3 {
+  margin-bottom: 0.5em !important;
+}
 #faq li, #about p {
   font-size: 12px;
 }
 #faq h3, #about h3 {
   font-size: 14px;
-  border-bottom: 1px solid #f1c40f;
-  margin-bottom: 0.5em;
 }
 #faq li {
   list-style: square;
@@ -237,29 +292,33 @@ form { margin: 0; padding: 0; }
   float:right;
 }
 
-
 /*
  * LEGEND
  */
-#legend, #mininterface {
-  visibility: hidden; 
-}
 #legend ul {
   margin: 0;
 }
 #legend li {
   display: inline-block;
+  width: 48%;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid #f1c40f;
+  margin-bottom: 0.25em;
+}
+#legend li:nth-child(2n) {
+  padding-left: 1%;
+  border-left: 1px solid #f1c40f;
 }
 #legend h3 {
   width: 70px;
+  display: block !important;
 }
-.nodes-legend li + li {
-  width: 100px;
+#legend .space {
+  margin-top: 1.5em;
 }
 .edges-legend {
   padding: 7px 0px 0px;
   margin-top: 0.5em !important;
-  border-top: 1px solid #F1C40F;
 }
 .edges-legend h3 {
   position: relative;
@@ -267,9 +326,6 @@ form { margin: 0; padding: 0; }
 }
 .edges-legend p {
   margin: 0;
-}
-.edges-legend li + li {
-  padding-right: 1em;
 }
 .line, .square {
   display: inline-block;

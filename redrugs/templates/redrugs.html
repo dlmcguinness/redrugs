@@ -20,7 +20,7 @@
   <div id="initial" class="container-fluid col-md-6 col-md-offset-3">
     <h1>Repurposing Drugs with Semantics</h1>
     <form class="form-horizontal" role="form" data-ng-submit="search(searchTerms)">
-      <label for="startSearch">Search For Biological Entity:</label>
+      <label for="startSearch">Search for Biological Entity:</label>
       <input id="startSearch" class="searchBox col-md-9 col-sm-9 col-xs-9" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease. ex. Topiramate" autofocus="autofocus" />
       <button type="submit" class="btn btn-default col-md-3 col-sm-3 col-xs-3 searchbtn">Search</button>
     </form>
@@ -32,11 +32,15 @@
     </div>
   </div>
 
-  <div id="interface" class="col-md-12">
+
+  <!--
+    GUI
+  -->
+  <div id="interface" class="col-md-3">
     <!--
       Top left search section
     -->
-    <div id="search" class="interface col-md-3">
+    <div id="search" class="interface col-md-12">
       <h1>Repurposing Drugs with Semantics</h1>
       <form class="form-inline" role="form" data-ng-submit="search(searchTerms)">
         <input id="searchAgain" class="searchBox col-md-12" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease" autofocus="autofocus" />
@@ -53,10 +57,10 @@
     <!--
       Tabs (using Bootstrap)
     -->
-    <div id="tabs" class="col-md-9" role="tabpanel">
-      <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab">Legend</a></li>
-        <li role="presentation"><a href="#explore" aria-controls="explore" role="tab" data-toggle="tab">Explore Connections</a></li>
+    <div id="tabs" class="col-md-12" role="tabpanel">
+      <ul class="nav nav-pills nav-stacked" role="tablist">
+        <li role="presentation" class="active"><a href="#explore" aria-controls="explore" role="tab" data-toggle="tab">Explore</a></li>
+        <li role="presentation"><a href="#legend" aria-controls="legend" role="tab" data-toggle="tab">Legend</a></li>
         <li role="presentation"><a href="#edgeinfo" aria-controls="edgeinfo" role="tab" data-toggle="tab">Edge Details</a></li>
         <li role="presentation"><a href="#options" aria-controls="options" role="tab" data-toggle="tab">Options</a></li>
         <li role="presentation"><a href="#faq" aria-controls="faq" role="tab" data-toggle="tab">Help</a></li>
@@ -65,11 +69,158 @@
 
       <div class="tab-content col-md-12">
         <!--
+          EXPLORE CONNECTIONS
+        -->
+        <div role="tabpanel" class="tab-pane active" id="explore">
+          <h3>Manage Nodes</h3>
+          <div class="btn-wrap">
+            <div class="btn-group btn-group-justified" data-toggle="buttons">
+              <label class="btn active" id="panning">
+                <input type="radio" name="options" autocomplete="off" checked="checked"/><i class="fa fa-arrows-alt"></i> Panning
+              </label>
+              <label class="btn" id="multiselect">
+                <input type="radio" name="options" autocomplete="off"/><i class="fa fa-square-o"></i> Multiple Selection
+              </label>
+            </div>
+          </div>
+          <div class="btn-wrap">
+            <div class="btn-group btn-group-justified">
+              <a id="lock" data-ng-click="lock(getSelected('id'), true)" class="btn btn-small"><i class="fa fa-lock"></i> Lock Position</a>
+              <a id="unlock" data-ng-click="lock(getSelected('id'), false)" class="btn btn-small"><i class="fa fa-unlock"></i> Unlock Position</a>
+            </div>
+          </div>
+          <h3 class="space">Zoom:</h3>
+          <div class="btn-wrap">
+            <div class="btn-group btn-group-justified">
+                <a id="zoom-in" class="btn btn-small"><i class="fa fa-search-plus"></i> </a>
+                <a id="zoom-fit" class="btn btn-small"><i class="fa fa-search"></i></a>
+                <a id="zoom-out" class="btn btn-small"><i class="fa fa-search-minus"></i></a>
+            </div>
+          </div>
+          <h3 class="space">Explore Connections</h3>
+          <div class="btn-wrap"> 
+            <div class="btn-group btn-group-justified">
+              <a type="button" data-ng-click="getUpstream(getSelected('uri'))" class="btn btn-small">
+                <i class="fa fa-backward"></i> Find Incoming Links
+              </a>
+              <a data-ng-click="getDownstream(getSelected('uri'))" type="button" class="btn btn-small">
+                Find Outgoing Links <i class="fa fa-forward"></i> 
+              </a>
+            </div>
+          </div>
+          <div class="btn-wrap">
+            <div class="btn-group btn-group-justified">
+              <a id="details" data-ng-click="getDetails(getSelected('details'))" type="button" class="btn btn-small">
+                <i class="fa fa-external-link"></i> Get Details
+              </a>
+              <a id="bfs" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn btn-small">
+                <i class="icon-eye-open"></i> Highlight Connections
+              </a>
+            </div>
+          </div>
+          <div class="panel-group" id="accordion" role="tablist">
+            <div class="panel panel-default">
+              <div class="panel-heading" role="tab" id="customqueryhdg">
+                <h4 class="panel-title">
+                  <a class="collapsed" data-toggle="collapse" href="#customquery" aria-expanded="false" aria-controls="customquery">
+                    <h4><i class="fa fa-cog"></i> Custom Query</h4>
+                  </a>
+                </h4>
+              </div>
+              <div id="customquery" class="panel-collapse collapse" role="tabpanel" aria-labelledby="customqueryhdg">
+                <div class="panel-body">
+                  <form class="form-inline custom">
+                    <div class="form-group">
+                      <label for="numSearch">Number of intermediate nodes: </label>
+                      <input type="text" id="numSearch" name="numSearch" data-ng-model="numSearch" value="1" />
+                    </div>
+                    <div class="form-group">
+                      <label for="probThreshold">Minimum Probability: </label>
+                      <input type="text" id="probThreshold" name="probThreshold" data-ng-model="probThreshold" value="0.95" />
+                    </div>
+                    <div class="form-group">
+                      <input type="radio" id="incoming" class="radio inline" name="incoming" value="upstream" data-ng-model="check"/> 
+                      <label for="incoming">Find all Incoming Connections</label>
+                    </div>
+                    <div class="form-group">
+                      <input type="radio" id="outgoing" class="radio inline" name="outgoing" value="downstream" data-ng-model="check"/> 
+                      <label for="outgoing">Find all Outgoing Connections</label>
+                    </div>
+                    <div class="form-group" id="customNode">
+                      <h3>Node types: </h3>
+                      <div class="chkbx">
+                        <input type="checkbox" id="activator" name="activator" data-ng-model="filter['customNode']['activator']"/>
+                        <label for="activator">Activator</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="inhibitor" name="inhibitor" data-ng-model="filter['customNode']['inhibitor']"/>
+                        <label for="inhibitor">Inhibitor</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="protein" name="protein" data-ng-model="filter['customNode']['protein']"/>
+                        <label for="protein">Protein</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="disease" name="disease" data-ng-model="filter['customNode']['disease']"/>
+                        <label for="disease">Disease</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="drug" name="drug" data-ng-model="filter['customNode']['drug']"/>
+                        <label for="drug">Drug</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="undef" name="undef" data-ng-model="filter['customNode']['undef']"/>
+                        <label for="undef">Undefined</label>
+                      </div>
+                    </div>
+                    <div class="form-group" id="customEdge">
+                      <h3>Edge types: </h3>
+                      <div class="chkbx">
+                        <input type="checkbox" id="activation" name="activation" data-ng-model="filter['customEdge']['activation']"/>
+                        <label for="activation">Activation</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="inhibition" name="inhibition" data-ng-model="filter['customEdge']['inhibition']"/>
+                        <label for="inhibitor">Inhibitor</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="association" name="association" data-ng-model="filter['customEdge']['association']"/>
+                        <label for="association">Physical Association, aggregation, and colocalization</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="reaction" name="reaction" data-ng-model="filter['customEdge']['reaction']"/>
+                        <label for="reaction">Phosphorylation Reaction</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="cleavage" name="cleavage" data-ng-model="filter['customEdge']['cleavage']"/>
+                        <label for="cleavage">Protein Cleavage and cleavage reaction</label>
+                      </div>
+                      <div class="chkbx">
+                        <input type="checkbox" id="interaction" name="interaction" data-ng-model="filter['customEdge']['interaction']"/>
+                        <label for="interaction">Interaction</label>
+                      </div>
+                    </div>
+                    <p class="col-md-12">This process may take several minutes to complete. Do you wish to continue? <button id="submitCustom">Continue</button></p>
+                  </form>
+
+                  <form id="nodecustom" class="form-horizontal form-inline" role="form">
+                    
+                  </form>
+                  <form id="edgecustom" class="form-horizontal form-inline" role="form">
+                    
+                  </form>
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--
           LEGEND
         -->
-        <div role="tabpanel" class="tab-pane active" id="legend">
+        <div role="tabpanel" class="tab-pane" id="legend">
+          <h3>Nodes:</h3>
           <ul class="nodes-legend">
-            <li><h3>Nodes:</h3></li>
             <li><div class="activator square"></div><span>Activator</span></li>
             <li><div class="inhibitor square fa fa-star fa-2x"></div><span>Inhibitor</span></li>
             <li><div class="protein square"></div><span>Protein</span></li>
@@ -77,8 +228,8 @@
             <li><div class="drug square"></div><span>Drug</span></li>
             <li><div class="other square"></div><span>Undefined</span></li>
           </ul>
+          <h3 class="space">Edges</h3>
           <ul class="edges-legend">
-            <li><h3>Edges</h3></li>
             <li>
               <p><a href="#">Activation</a></p>
               <div id="type1" class="line"></div><div id="type1s"></div>
@@ -111,147 +262,19 @@
           </ul>
         </div>
         <!--
-          EXPLORE CONNECTIONS
-        -->
-        <div role="tabpanel" class="tab-pane" id="explore">
-          <div class="btn-group" data-toggle="buttons">
-            <label class="btn active" id="panning">
-              <input type="radio" name="options" autocomplete="off" checked="checked"/> Panning
-            </label>
-            <label class="btn" id="multiselect">
-              <input type="radio" name="options" autocomplete="off"/> Multiple Selection
-            </label>
-          </div>
-          <div class="btn-group">
-            <button id="lock" data-ng-click="lock(getSelected('id'), true)" class="btn btn-small"><i class="fa fa-lock"></i></button>
-            <button id="unlock" data-ng-click="lock(getSelected('id'), false)" class="btn btn-small"><i class="fa fa-unlock"></i></button>
-          </div>
-          <div class="btn-group">
-            <button id="zoom-in" class="btn btn-small"><i class="fa fa-search-plus"></i></button>
-            <button id="zoom-fit" class="btn btn-small"><i class="fa fa-search"></i></button>
-            <button id="zoom-out" class="btn btn-small"><i class="fa fa-search-minus"></i></button>
-          </div>
-          <div class="btn-group">
-            <button id="details" data-ng-click="getDetails(getSelected('details'))" type="button" class="btn btn-small">
-              <i class="fa fa-external-link"></i> Get Details
-            </button>
-            <button id="bfs" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn btn-small">
-              <i class="icon-eye-open"></i> Highlight Connections
-            </button>
-          </div>
-          <div class="btn-group">
-            <button type="button" data-ng-click="getUpstream(getSelected('uri'))" class="btn btn-small">
-              <i class="fa fa-backward"></i> Find Incoming Links
-            </button>
-            <button data-ng-click="getDownstream(getSelected('uri'))" type="button" class="btn btn-small">
-              Find Outgoing Links <i class="fa fa-forward"></i> 
-            </button>
-          </div>
-          <div class="panel-group" id="accordion" role="tablist">
-            <div class="panel panel-default">
-              <div class="panel-heading" role="tab" id="customqueryhdg">
-                <h4 class="panel-title">
-                  <a class="collapsed" data-toggle="collapse" href="#customquery" aria-expanded="false" aria-controls="customquery">
-                    <h3><i class="fa fa-cog"></i> Custom Query</h3>
-                  </a>
-                </h4>
-              </div>
-              <div id="customquery" class="panel-collapse collapse" role="tabpanel" aria-labelledby="customqueryhdg">
-                <div class="panel-body">
-                  <form id="othercustom" class="form-inline" role="form">
-                    <label for="numSearch">Number of intermediate nodes: </label>
-                    <input type="text" id="numSearch" name="numSearch" data-ng-model="numSearch" value="1" />
-                    <label for="probThreshold">Minimum Probability: </label>
-                    <input type="text" id="probThreshold" name="probThreshold" data-ng-model="probThreshold" value="0.95" />
-                    <input type="radio" id="incoming" class="radio inline" name="incoming" value="upstream" data-ng-model="check"/> 
-                    <label for="incoming">Find all Incoming Connections</label>
-                    <input type="radio" id="outgoing" class="radio inline" name="outgoing" value="downstream" data-ng-model="check"/> 
-                    <label for="outgoing">Find all Outgoing Connections</label>
-                  </form>
-                  <form id="nodecustom" class="form-horizontal form-inline" role="form">
-                    <h3>Node types: </h3>
-                    <div class="chkbx">
-                      <input type="checkbox" id="activator" name="activator" data-ng-model="filter['customNode']['activator']"/>
-                      <label for="activator">Activator</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="inhibitor" name="inhibitor" data-ng-model="filter['customNode']['inhibitor']"/>
-                      <label for="inhibitor">Inhibitor</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="protein" name="protein" data-ng-model="filter['customNode']['protein']"/>
-                      <label for="protein">Protein</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="disease" name="disease" data-ng-model="filter['customNode']['disease']"/>
-                      <label for="disease">Disease</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="drug" name="drug" data-ng-model="filter['customNode']['drug']"/>
-                      <label for="drug">Drug</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="undef" name="undef" data-ng-model="filter['customNode']['undef']"/>
-                      <label for="undef">Undefined</label>
-                    </div>
-                  </form>
-                  <form id="edgecustom" class="form-horizontal form-inline" role="form">
-                    <h3>Edge types: </h3>
-                    <div class="chkbx">
-                      <input type="checkbox" id="activation" name="activation" data-ng-model="filter['customEdge']['activation']"/>
-                      <label for="activation">Activation</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="inhibition" name="inhibition" data-ng-model="filter['customEdge']['inhibition']"/>
-                      <label for="inhibitor">Inhibitor</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="association" name="association" data-ng-model="filter['customEdge']['association']"/>
-                      <label for="association">Physical Association, aggregation, and colocalization</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="reaction" name="reaction" data-ng-model="filter['customEdge']['reaction']"/>
-                      <label for="reaction">Phosphorylation Reaction</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="cleavage" name="cleavage" data-ng-model="filter['customEdge']['cleavage']"/>
-                      <label for="cleavage">Protein Cleavage and cleavage reaction</label>
-                    </div>
-                    <div class="chkbx">
-                      <input type="checkbox" id="interaction" name="interaction" data-ng-model="filter['customEdge']['interaction']"/>
-                      <label for="interaction">Interaction</label>
-                    </div>
-                  </form>
-                  <p class="col-md-12">This process may take several minutes to complete. Do you wish to continue? <button id="submitCustom">Continue</button></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!--
           EDGE INFO
         -->
         <div role="tabpanel" class="tab-pane" id="edgeinfo">
           <div id="edgeask" class="col-md-12">Please select an edge to view more information</div>
-          <div id="edgeoverview" class="col-md-3"></div>
-          <div id="edgetable" class="col-md-9"></div>
+          <div id="edgeoverview" class="col-md-12"></div>
+          <div id="edgetable" class="col-md-12"></div>
         </div>
         <!--
           OPTIONS
         -->
         <div role="tabpanel" class="tab-pane" id="options">
-          <form id="layout" class="form-horizontal col-md-12" data-ng-submit="cy.layout(layout)">
-            <h3>Layout</h3>
-            <input type="radio" class="radio inline" name="optArbor" value="arbor" data-ng-model="layout.name"/> <span>Arbor</span>
-            <input type="radio" class="radio inline" name="optSpringy" value="springy" data-ng-model="layout.name"/> <span>Springy</span>
-            <input type="radio" class="radio inline" name="optCircle" value="circle" data-ng-model="layout.name"/> <span>Circle</span>
-            <input type="radio" class="radio inline" name="optCose" value="cose" data-ng-model="layout.name"/> <span>Cose</span>
-            <input type="radio" class="radio inline" name="optBF" value="breadthfirst" data-ng-model="layout.name"/> <span>Breadth First</span>
-            <input type="radio" class="radio inline" name="optRandom" value="random" data-ng-model="layout.name"/> <span>Random</span>
-            <input id="layout-btn" class="btn btn-small" type="submit" value="Change"/>
-          </form>
           <h3>Background Color:</h3>
-          <div class="btn-group" data-toggle="buttons">
+          <div id="colorbg" class="btn-group" data-toggle="buttons">
             <label class="btn active" id="bgdark">
               <input type="radio" name="options" autocomplete="off" checked="checked"/> Dark
             </label>
@@ -259,6 +282,28 @@
               <input type="radio" name="options" autocomplete="off"/> Light
             </label>
           </div>
+          <form id="layout" class="form-horizontal col-md-12" data-ng-submit="cy.layout(layout)">
+            <h3>Layout: </h3>
+            <div class="form-group space">
+              <input type="radio" class="radio inline" name="optArbor" value="arbor" data-ng-model="layout.name"/> <span>Arbor</span>
+            </div>
+            <div class="form-group space">
+              <input type="radio" class="radio inline" name="optSpringy" value="springy" data-ng-model="layout.name"/> <span>Springy</span>
+            </div>
+            <div class="form-group">
+             <input type="radio" class="radio inline" name="optCircle" value="circle" data-ng-model="layout.name"/> <span>Circle</span>
+            </div>
+            <div class="form-group">
+              <input type="radio" class="radio inline" name="optCose" value="cose" data-ng-model="layout.name"/> <span>Cose</span>
+            </div>
+            <div class="form-group">
+              <input type="radio" class="radio inline" name="optBF" value="breadthfirst" data-ng-model="layout.name"/> <span>Breadth First</span>
+            </div>
+            <div class="form-group">
+              <input type="radio" class="radio inline" name="optRandom" value="random" data-ng-model="layout.name"/> <span>Random</span>
+            </div>
+            <input id="layout-btn" class="btn btn-small" type="submit" value="Change"/>
+          </form>
         </div>
         <!--
           HELP
@@ -291,13 +336,13 @@
   <!--
     Hide/Show Options button
   -->
-  <a id="mininterface" class="col-md-2 col-md-offset-5 col-sm-12 col-xs-12"><i class="fa fa-chevron-circle-up"></i> Hide Options</a>
+<!--   <a id="mininterface" class="col-md-2 col-md-offset-5 col-sm-12 col-xs-12"><i class="fa fa-chevron-circle-up"></i> Hide Options</a> -->
 
   <!-- 
     Holds the Cytoscape.js object
   -->
-  <div id="results" class="col-md-12"></div>
-
+  <div id="results" class="col-md-9"></div>
+  
 <!-- 
   SCRIPTS 
 -->
