@@ -602,7 +602,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     // Starts the search for given elements and its nearest downstream neighbors
     $scope.search = function(query) {
         $('#initial').css("display", "none");
-        $('#interface, #explore, #mininterface').css("visibility", "visible");
+        $('#interface, #explore, #minimize').css("visibility", "visible");
         $scope.loading = true;
         var g = new $.Graph();
         $scope.createResource($scope.searchTermURIs[$.trim(query)],g);
@@ -802,7 +802,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
      *  GUI INTERACTIONS
      */
     // Help hover 
-    $( "#help" ).hover(
+    $("#help").hover(
         function() { $('#help-info').show();}, 
         function() { $('#help-info').hide();}
     );
@@ -816,20 +816,27 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $scope.cy.load();
         $scope.search($scope.searchTerms);
     });
-    // Minimize search bar
-    $('#mininterface').click(function() {
-        if ($('#mininterface').html() === '<i class="fa fa-chevron-circle-down"></i> Show Options') {
+    // Minimize sidebar
+    $('#minimize').click(function() {
+        if ($('#minimize').html() === '<i class="fa fa-caret-down"></i>') {
+            $("#results").removeClass("col-md-12");
+            $("#results").addClass("col-md-9");
             $("#interface").css("display", "block"); 
-            $("#mininterface").html('<i class="fa fa-chevron-circle-up"></i> Hide Options');        
+            $("#minimize").html('<i class="fa fa-caret-up"></i>');        
+            $("#minimize").removeClass("maximize");
             $scope.cy.resize();
+            $scope.cy.layout($scope.layout);
         }
         else {
             $("#interface").css("display", "none"); 
-            $("#mininterface").html('<i class="fa fa-chevron-circle-down"></i> Show Options');
+            $("#minimize").html('<i class="fa fa-caret-down"></i>');
+            $("#minimize").addClass("maximize");
+            $("#results").removeClass("col-md-9");
+            $("#results").addClass("col-md-12");
             $scope.cy.resize();
+            $scope.cy.layout($scope.layout);
         }
     });
-
     // Zoom
     $("#zoom-fit").click(function() { $scope.cy.fit(50); });
     $("#zoom-in").click(function() {
@@ -882,6 +889,21 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
         } else if ($scope.check == "upstream") {
             $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        }
+    });
+
+    /* Refining screen layout */
+    $(window).resize(function(){
+        var w = $(window).width();
+        // If the window is larger than 1920px 
+        if (w > 1920 && !$("#interface-wrapper").hasClass("fixed")) {  
+            $("#interface-wrapper").addClass("fixed");
+            $(".rest").css("width", w-400 + "px !important");
+            $("#results").addClass("rest");
+        }   
+        else if(w <= 1920 && $("#interface-wrapper").hasClass("fixed")) {
+            $("#interface-wrapper").removeClass("fixed");
+            $("#results").removeClass("rest");
         }
     });
 })
