@@ -62,7 +62,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.neighborhood = [];
     $scope.layout = {
         name: 'arbor',
-        padding: [100,100,100,100]
+        padding: [100,100,100,100],
+        maxSimulationTime: parseInt($scope.numLayout) * 1000
     };
     $scope.createGraph = function() {
         $scope.results.cytoscape({
@@ -135,6 +136,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         $("#edgeask").removeClass('hidden');
                         $('#edgeoverview').html("");
                         $('#edgetable').html("");
+                        $("#nodeask").removeClass('hidden');
+                        $("#nodeopts").addClass('hidden');
+                        $('#nodeoverview').html("");
+                        $('#nodetable').html("");
                         $scope.neighborhood = [];
                     }
                 });
@@ -190,13 +195,22 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     $("#edgetable").html('<table class="table"><thead><tr><th>Database</th><th>Interaction Type</th><th>Probability</th></tr></thead><tbody>' + table + '</tbody></table>');
                     $('#tabs a[href="#edgeinfo"]').tab('show'); 
                     $("#edgeask").addClass('hidden');
+                    $("#nodeask").removeClass('hidden');
+                    $("#nodeopts").addClass('hidden');
+                    $('#nodeoverview').html("");
+                    $('#nodetable').html("");
                 });
 
                 // When a node is selected
                 cy.on('select', 'node', function(e){
                     var node = e.cyTarget; 
                     $scope.bfsrun = false;
-                    $('#tabs a[href="#explore"]').tab('show'); 
+                    $('#tabs a[href="#nodeinfo"]').tab('show'); 
+                    $("#nodeask").addClass('hidden');
+                    $("#nodeoverview").html(    
+                        "<h3>Node: " + node.data().label + "</h3>"
+                    );
+                    $("#nodeopts").removeClass('hidden');
                     $("#edgeask").removeClass('hidden');
                     $('#edgeoverview').html("");
                     $('#edgetable').html("");
@@ -332,18 +346,18 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     }
     // Maps node types to values for Cytoscape visualization
     $scope.nodeTypes = {
-        "triangle" : {
-            "shape": "triangle",
-            "size": "70",
-            "color": "#FED700",
-            "uris": ["http://semanticscience.org/resource/activator"]
-        },
-        "star" : {
-            "shape": "star",
-            "size": "70",
-            "color": "#BF1578",
-            "uris": ["http://semanticscience.org/resource/inhibitor"]
-        },
+        // "triangle" : {
+        //     "shape": "triangle",
+        //     "size": "70",
+        //     "color": "#FED700",
+        //     "uris": ["http://semanticscience.org/resource/activator"]
+        // },
+        // "star" : {
+        //     "shape": "star",
+        //     "size": "70",
+        //     "color": "#BF1578",
+        //     "uris": ["http://semanticscience.org/resource/inhibitor"]
+        // },
         "square" : {
             "shape": "square",
             "size": "50",
@@ -358,9 +372,9 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         },
         "circle" : {
             "shape": "circle",
-            "size": "50",
+            "size": "60",
             "color": "#16A085",
-            "uris": ["http://semanticscience.org/resource/drug"]
+            "uris": ["http://semanticscience.org/resource/activator", "http://semanticscience.org/resource/inhibitor", "http://semanticscience.org/resource/drug"]
         },
         "other" : {
             "shape": "circle",
@@ -402,6 +416,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.showLabel = true;
     $scope.bfsrun = false;
     $scope.numSearch = 1;
+    $scope.numLayout = 4;
     $scope.probThreshold = 0.95;
     $scope.found = -1;
     $scope.once = false;
@@ -818,18 +833,17 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     });
     // Minimize sidebar
     $('#minimize').click(function() {
-        if ($('#minimize').html() === '<i class="fa fa-caret-down"></i>') {
+        if ($('#minimize').html() === '<i class="fa fa-caret-down"></i> <span>Show sidebar</span>') {
             $("#results").removeClass("col-md-12");
             $("#results").addClass("col-md-9");
             $("#interface").css("display", "block"); 
-            $("#minimize").html('<i class="fa fa-caret-up"></i>');        
+            $("#minimize").html('<i class="fa fa-caret-up"></i> <span>Hide sidebar</span>');        
             $("#minimize").removeClass("maximize");
             $scope.cy.resize();
-            $scope.cy.layout($scope.layout);
         }
         else {
             $("#interface").css("display", "none"); 
-            $("#minimize").html('<i class="fa fa-caret-down"></i>');
+            $("#minimize").html('<i class="fa fa-caret-down"></i> <span>Show sidebar</span>');
             $("#minimize").addClass("maximize");
             $("#results").removeClass("col-md-9");
             $("#results").addClass("col-md-12");
@@ -872,6 +886,12 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     });
     $("#bglight").click(function() {
         $('body').css("background", 'url("../img/agsquare_@2X.png")');
+    });
+    // Relation Expansion
+    $("#expansion").click(function() {
+        var e = $scope.getSelected('uri');
+        $scope.getDownstream(e);
+        $scope.getUpstream(e);
     });
     // Custom Query Submit
     $("#submitCustom").click(function() {

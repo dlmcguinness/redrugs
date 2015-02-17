@@ -28,7 +28,7 @@ form { margin: 0; padding: 0; }
   margin: 0;
 }
 .btn-group + .btn-group { margin: none; }
-.col-md-12, .col-md-9, .col-md-3 { padding: 0; }
+.col-md-12, .col-md-10, .col-md-9, .col-md-8, .col-md-7, .col-md-3, .col-md-2 { padding: 0; }
 
 /*
  * INITIAL SEARCH
@@ -100,18 +100,22 @@ form { margin: 0; padding: 0; }
 }
 #minimize {
   visibility: hidden;
-  padding: 0;
+  padding: 2px;
   text-align: center;
   font-size: 16px;
   background-color: #f1c40f;
   margin: 0;
+  text-transform: lowercase;
 }
 #minimize:hover {
   cursor: pointer;
   color: white;
 }
+#minimize span {
+  font-size: 14px;
+  font-weight: lighter;
+}
 .maximize {
-  text-transform: lowercase;
   padding: 2px 0 !important;
 }
 #search {
@@ -170,7 +174,7 @@ form { margin: 0; padding: 0; }
   height: 2em;
 }
 #explore .btn-wrap {
-  margin-top: 0.5em !important;
+  margin-top: 0.5em;
 }
 #explore .space {
   margin-top: 1.5em;
@@ -184,6 +188,10 @@ form { margin: 0; padding: 0; }
 #panning, #multiselect, #bgdark, #bglight {
   font-size: 10px;
   line-height: 1.5em !important;
+}
+#zoombtns {
+  margin-top: 1.3em !important;
+  margin-left: 0.5em;
 }
 #accordion {
   margin: 0.5em 0 2em 0;
@@ -216,12 +224,12 @@ form { margin: 0; padding: 0; }
 }
 
 /* 
- * EDGE DETAILS
+ * NODE/EDGE DETAILS
  */
-#edgeask, #edgeoverview {
+#edgeask, #edgeoverview, #nodeask {
   font-size: 12px;
 }
-#edgetable {
+#edgetable, #nodetable {
   font-size: 10px;
 }
 #dbref {
@@ -231,6 +239,9 @@ form { margin: 0; padding: 0; }
   list-style: circle;
   margin-left: 2em;
 }
+#nodeoverview {
+  padding: 0px 0px 1em 0px;
+}
 #edgeoverview {
   margin-top: 10px;
   padding:0 10px 1em 0;
@@ -239,6 +250,27 @@ form { margin: 0; padding: 0; }
 /* 
  * OPTIONS 
  */
+.form-horizontal .form-group {
+  margin-right: 0px !important;
+  margin-left: 0px !important;
+}
+#layouttime input {
+  line-height: 1.5em;
+  height: 2em;
+  width: 20%;
+  min-width: 1em;
+  max-width: 4em;
+}
+#layouttime .form-group {
+  margin-bottom: 0;
+}
+#layouttime {
+  margin-top: 1em;
+}
+#layouttime label {
+  float: left;
+  width: 80%;
+}
 #layout {
   margin: 0.5em 0;
 }
@@ -265,7 +297,7 @@ form { margin: 0; padding: 0; }
   padding: 0 10px 0 0;
   font-size: 12px;
 }
-#colorbg, #layout-btn {
+#numLayout, #colorbg, #layout-btn {
   float: right;
 }
 #layout-btn {
