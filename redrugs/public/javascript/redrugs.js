@@ -205,7 +205,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 cy.on('select', 'node', function(e){
                     var node = e.cyTarget; 
                     $scope.bfsrun = false;
-                    $('#tabs a[href="#nodeinfo"]').tab('show'); 
+                    $('#tabs a[href="#explore"]').tab('show'); 
                     $("#nodeask").addClass('hidden');
                     $("#nodeoverview").html(    
                         "<h3>Node: " + node.data().label + "</h3>"
@@ -851,6 +851,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.cy.layout($scope.layout);
         }
     });
+    // Refresh
+    $("#refresh").click(function() {
+        $scope.cy.layout($scope.layout);
+    });
     // Zoom
     $("#zoom-fit").click(function() { $scope.cy.fit(50); });
     $("#zoom-in").click(function() {
@@ -887,14 +891,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $("#bglight").click(function() {
         $('body').css("background", 'url("../img/agsquare_@2X.png")');
     });
-    // Relation Expansion
-    $("#expansion").click(function() {
-        var e = $scope.getSelected('uri');
-        $scope.getDownstream(e);
-        $scope.getUpstream(e);
-    });
-    // Custom Query Submit
-    $("#submitCustom").click(function() {
+    // // Relation Expansion
+    // $("#expansion").click(function() {
+    //     var e = $scope.getSelected('uri');
+    //     $scope.getDownstream(e);
+    //     $scope.getUpstream(e);
+    // });
+    // Find custom expansions
+    $scope.customquery = function(type) {
         $scope.numSearch = parseInt($scope.numSearch);
         $scope.probThreshold = parseFloat($scope.probThreshold);
         if ($scope.numSearch < 0 || $scope.probThreshold < 0) { return; }
@@ -905,12 +909,28 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $scope.$apply(function(){ $scope.loading = true; });
         var g = new $.Graph();
         $scope.getSelected('uri').forEach(function(d) { $scope.createResource(d,g); });
+        if (type !== "custom") {
+            for (var e in $scope.filter["customEdge"]) {
+                $scope.filter["customEdge"][e] = true;
+            }
+            for (var e in $scope.filter["customNode"]) {
+                if (type === "all") {
+                    $scope.filter["customNode"][e] = true;
+                } else {
+                    if (e !== type) {
+                        $scope.filter["customNode"][e] = false;
+                    } else {
+                        $scope.filter["customNode"][e] = true;
+                    } 
+                }
+            }
+        }
         if ($scope.check == "downstream") { 
             $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
         } else if ($scope.check == "upstream") {
             $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
         }
-    });
+    }
 
     /* Refining screen layout */
     $(window).resize(function(){

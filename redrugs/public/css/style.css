@@ -28,7 +28,13 @@ form { margin: 0; padding: 0; }
   margin: 0;
 }
 .btn-group + .btn-group { margin: none; }
-.col-md-12, .col-md-10, .col-md-9, .col-md-8, .col-md-7, .col-md-3, .col-md-2 { padding: 0; }
+
+.col-md-12, .col-md-10, .col-md-9, .col-md-8, 
+.col-md-7, .col-md-3, .col-md-2 { padding: 0; }
+
+.tab-content > .active {
+    padding-bottom: 2em;
+}
 
 /*
  * INITIAL SEARCH
@@ -166,23 +172,26 @@ form { margin: 0; padding: 0; }
 #explore label, #explore input, #explore li {
   font-size: 12px;
 }
-#explore label {
+#explore label, #nodeinfo label {
   line-height: 2em;
 }
-#explore input[type=text], #customquery input[type=text] {
+#explore input[type=text], #numQuery input[type=text] {
   width: 50px;
   height: 2em;
 }
-#explore .btn-wrap {
+#numQuery {
   margin-top: 0.5em;
+}
+#explore .btn-wrap, #nodeinfo .btn-wrap {
+  margin-top: 0.2em;
 }
 #explore .space {
   margin-top: 1.5em;
 }
-#explore .tab-pane {
+#explore .tab-pane, #nodeinfo .tab-pane {
   margin: 0 !important;
 }
-#explore h4 {
+#explore h4, #nodeinfo h4 {
   margin: 0;
 }
 #panning, #multiselect, #bgdark, #bglight {
@@ -192,6 +201,10 @@ form { margin: 0; padding: 0; }
 #zoombtns {
   margin-top: 1.3em !important;
   margin-left: 0.5em;
+  margin-bottom: 1em;
+}
+#detailsbtnwrap {
+  margin-top: 0 !important;
 }
 #accordion {
   margin: 0.5em 0 2em 0;
@@ -218,10 +231,18 @@ form { margin: 0; padding: 0; }
 .custom p {
   margin-top: 1em;
 }
+#customquery, #customquery label {
+  font-size: 12px !important;
+}
+#customquery label {
+  position: relative;
+  top: 4px;
+}
 #submitCustom {
   margin: 0.5em;
   float: right;
 }
+
 
 /* 
  * NODE/EDGE DETAILS
@@ -232,6 +253,8 @@ form { margin: 0; padding: 0; }
 #edgetable, #nodetable {
   font-size: 10px;
 }
+
+/* Edge details */
 #dbref {
   margin: 0; 
 }
@@ -239,12 +262,17 @@ form { margin: 0; padding: 0; }
   list-style: circle;
   margin-left: 2em;
 }
-#nodeoverview {
-  padding: 0px 0px 1em 0px;
-}
 #edgeoverview {
   margin-top: 10px;
   padding:0 10px 1em 0;
+}
+
+/* Node details */
+#nodeoverview {
+  padding: 0px 0px 1em 0px;
+}
+#nodeinfo .space {
+  margin-top: 1em;
 }
 
 /* 
