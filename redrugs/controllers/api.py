@@ -56,7 +56,7 @@ def lru(original_function, maxsize=1000):
 
 
 def geomean(nums):
-    return (reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
+    return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
 def logLikelihood(p):
     return math.atanh(2*p-1)
@@ -319,12 +319,15 @@ class TextSearchService(sadi.Service):
 
     #@lru
     def get_matches(self,search):
-        resultSet = model.graph.query('''prefix bd: <http://www.bigdata.com/rdf/search#>
+        query = '''prefix bd: <http://www.bigdata.com/rdf/search#>
           select distinct ?o ?s  where {{
             ?o bd:search """{0}.*""" .
             ?s rdfs:label ?o.
+            ?o bd:relevance ?cosine .
             FILTER(isURI(?s))
-          }}  limit 20'''.format(search))
+          }} order by desc(?cosine) limit 20'''.format(search)
+        resultSet = model.graph.query(query)
+        #print query
         result = [[y for y in x] for x in resultSet]
         return result
 
