@@ -21,11 +21,11 @@
     <h1>Repurposing Drugs with Semantics</h1>
     <form class="form-horizontal" role="form" data-ng-submit="search(searchTerms)">
       <label for="startSearch">Search for Biological Entity:</label>
-      <input id="startSearch" class="searchBox col-md-9" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease. ex. Topiramate" autofocus="autofocus" />
-      <button type="submit" class="btn btn-default col-md-3 searchbtn">Search</button>
+      <input id="startSearch" class="searchBox col-sm-9" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease. ex. Topiramate" autofocus="autofocus" />
+      <button type="submit" class="btn btn-default col-sm-3 searchbtn">Search</button>
     </form>
     <p id="help"><i class="fa fa-question-circle fa-lg"></i> Help</p> 
-    <div id="help-info" class="col-md-12">
+    <div id="help-info" class="col-sm-12">
       <p>This web application is intended to help discover new possible purposes for existing FDA approved drugs by expanding and exploring the interactions between drugs, genes/proteins, and diseases.</p>
       <p>To search, try typing either a specific drug, disease, or gene such Topiramate, selecting it from the dropdown menu, and then clicking on search. </p>
       <p>Please contact us if you have any questions or issues at something@rpi.edu</p>
@@ -119,6 +119,14 @@
                   <label for="probThreshold">Minimum Probability: </label>
                   <input type="text" id="probThreshold" name="probThreshold" data-ng-model="probThreshold" value="0.95" />
                 </div>
+                <div class="form-group">
+                  <input type="radio" id="incoming" class="radio inline" name="incoming" value="upstream" data-ng-model="check"/> 
+                  <label for="incoming">Find all Incoming Links</label>
+                </div>
+                <div class="form-group">
+                  <input type="radio" id="outgoing" class="radio inline" name="outgoing" value="downstream" data-ng-model="check"/> 
+                  <label for="outgoing">Find all Outgoing Links</label>
+                </div>
               </form>
               <div class="btn-wrap">
                 <div class="btn-group btn-group-justified">
@@ -145,16 +153,6 @@
                 </div>
               </div>
               <h3 class="space dspace">Find nearby:</h3>
-              <form class="form-inline">
-                <div class="form-group">
-                  <input type="radio" id="incoming" class="radio inline" name="incoming" value="upstream" data-ng-model="check"/> 
-                  <label for="incoming">Find all Incoming Links</label>
-                </div>
-                <div class="form-group">
-                  <input type="radio" id="outgoing" class="radio inline" name="outgoing" value="downstream" data-ng-model="check"/> 
-                  <label for="outgoing">Find all Outgoing Links</label>
-                </div>
-              </form>
               <div class="btn-wrap">
                 <div class="btn-group btn-group-justified">
                   <a type="button" data-ng-click="customquery('disease')" class="btn btn-small">
@@ -249,8 +247,6 @@
           <div role="tabpanel" class="tab-pane" id="legend">
             <h3>Nodes:</h3>
             <ul class="nodes-legend">
-<!--               <li><div class="activator square"></div><span>Activator</span></li>
-              <li><div class="inhibitor square fa fa-star fa-2x"></div><span>Inhibitor</span></li> -->
               <li><div class="protein square"></div><span>Protein</span></li>
               <li><div class="disease square"></div><span>Disease</span></li>
               <li><div class="drug square"></div><span>Drug</span></li>

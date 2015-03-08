@@ -327,7 +327,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             "filter": false
         },
         "non" : {
-            "shape": "none",
+            "shape": "triangle",
             "color": "#A7CE38",
             "uris": [
                 "http://purl.obolibrary.org/obo/MI_0190",
@@ -338,7 +338,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             "filter": false
         },
         "other": {
-            "shape": "none",
+            "shape": "triangle",
             "color": "#FF0040",
             "uris": [],
             "filter": false
@@ -657,13 +657,17 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.traces = {};
     $scope.check = "downstream"
     $scope.getCustomResults = function(result) {
-        console.log(result);
+        // console.log(result);
+
         // Source, target, edge
         var elements = $scope.getElements(result);
+        // console.log(elements);
 
-        // Populated with [source, target, edge] of filtered interactions as well as the chain needed to find them
+        // Populated with [source, target, edge] of interactions as well as 
+        // the chain needed to find them from the original elements in the graph
         var filteredEle = [];
-        // Populated with [source, target, edge] of potentially not-relevant edge interactions
+        // Populated with [source, target, edge] of potentially non-relevant 
+        // edge interactions
         var notfilteredEle = [];
 
         // Calculates the probability of the connection
@@ -671,7 +675,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             var prev = $scope.currStep - 1;
             if (prev < 0) { return 1; }
             // Looking at all targets
-            for (j = 1; j < $scope.prevEle[prev].length; j++) {
+            for (j = 0; j < $scope.prevEle[prev].length; j++) {
                 if (source === $scope.prevEle[prev][j].data.id) {
                     return $scope.prevEle[prev][j].data.prob;
                 }
@@ -740,6 +744,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 }
             }
         } else {
+            notfilteredEle = elements;
             for (i = 0; i < elements.length; i+=3) {
                 var prob = probOfConnection(elements[i+1].data.id) * elements[i+2].data.probability;
                 if (prob >= $scope.probThreshold) {
@@ -755,17 +760,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     satisfies = checkConnection(elements[i].data.types, elements[i+2].data.types)
                     if (satisfies) {
                         filteredEle.push(elements[i]);
-                        // Add if the data.type isn't a disease
-                        if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
-                            notfilteredEle.push(elements[i]);
-                            notfilteredEle.push(elements[i+1]);
-                            notfilteredEle.push(elements[i+2]);
-                        }
-                    }
-                    else {
-                        notfilteredEle.push(elements[i]);
-                        notfilteredEle.push(elements[i+1]);
-                        notfilteredEle.push(elements[i+2]);
                     }
                 }
             }
@@ -781,12 +775,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             resultElements = resultElements.concat($scope.traces[element.data.uri]);
         });
 
-        $scope.$apply(function(){ $scope.cy.add(resultElements); });
+        $scope.cy.add(resultElements);
 
         // If the search is not the last...
         if($scope.currStep < $scope.numSearch) {
             var targets = {};
-            for (i = 1; i < notfilteredEle.length; i+=3) {
+            var i;
+            if ($scope.check === "downstream") { i = 1; } else { i = 0; }
+            for (i; i < notfilteredEle.length; i+=3) {
                 targets[notfilteredEle[i].data.uri] = true;
             }
             $scope.currStep += 1;
@@ -797,16 +793,16 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             });
             if ($scope.check == "downstream"){
                 $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-            } else {$scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-
+            } else {
+                // upstream only getting one set of upstream results?
+                // Debugging doesn't bring me back to another call of getCustomResults
+                $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
             }
         }
         else {
             if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
-            $scope.$apply(function(){
-                $scope.cy.layout($scope.layout);
-                $scope.loading = false;
-            });
+            $scope.cy.layout($scope.layout);
+            $scope.$apply(function(){ $scope.loading = false; });
             $scope.loaded = result.resources.length;
             return;
         }
@@ -853,6 +849,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     });
     // Refresh
     $("#refresh").click(function() {
+        $scope.cy.resize();
         $scope.cy.layout($scope.layout);
     });
     // Zoom
@@ -891,22 +888,18 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $("#bglight").click(function() {
         $('body').css("background", 'url("../img/agsquare_@2X.png")');
     });
-    // // Relation Expansion
-    // $("#expansion").click(function() {
-    //     var e = $scope.getSelected('uri');
-    //     $scope.getDownstream(e);
-    //     $scope.getUpstream(e);
-    // });
     // Find custom expansions
     $scope.customquery = function(type) {
         $scope.numSearch = parseInt($scope.numSearch);
         $scope.probThreshold = parseFloat($scope.probThreshold);
         if ($scope.numSearch < 0 || $scope.probThreshold < 0) { return; }
         $scope.traces = {};
-        $scope.cy.$('node:selected').nodes().each(function(i,d) {$scope.selectedEle = d.data('id');});
+        $scope.cy.$('node:selected').nodes().each(function(i,d) {
+            $scope.selectedEle = d.data('id');
+        });
         $scope.currStep = 0;
         $scope.prevEle = new Array($scope.numSearch + 1);
-        $scope.$apply(function(){ $scope.loading = true; });
+        $scope.loading = true;
         var g = new $.Graph();
         $scope.getSelected('uri').forEach(function(d) { $scope.createResource(d,g); });
         if (type !== "custom") {
