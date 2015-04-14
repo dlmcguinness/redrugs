@@ -41,7 +41,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         return d[$scope.ns.pml('answers')];
                     }).map(function(d) {
                         var result = d[$scope.ns.rdfs('label')][0];
-                        var dbid = d.uri.substring(19);
+                        var j = d.uri.indexOf('/', 18) + 1;
+                        var dbid = d.uri.substring(j);
                         result += " - " + dbid;
                         $scope.searchTermURIs[result] = d.uri;
                         return result;
