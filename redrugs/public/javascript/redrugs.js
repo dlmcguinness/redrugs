@@ -62,7 +62,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.neighborhood = [];
     $scope.layout = {
         name: 'arbor',
-        padding: [100,100,100,100],
+        fit: false,
+        padding: [20,20,20,20],
         maxSimulationTime: parseInt($scope.numLayout) * 1000
     };
     $scope.createGraph = function() {
@@ -416,7 +417,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.showLabel = true;
     $scope.bfsrun = false;
     $scope.numSearch = 1;
-    $scope.numLayout = 4;
+    $scope.numLayout = 20;
     $scope.probThreshold = 0.95;
     $scope.found = -1;
     $scope.once = false;
@@ -567,7 +568,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             node.data.size = $scope.getNodeFeature("size", type);
             node.data.color = $scope.getNodeFeature("color", type);
             node.data.linecolor = "#E1EA38";
-            node.data.prob = 1;
         }
         return node;
     };
@@ -659,153 +659,109 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.getCustomResults = function(result) {
         // console.log(result);
 
+        var links = result.resources
+            .map(function(d) {
+                return result.getResource(d);
+            })
+            .filter(function(d) {
+                return d[$scope.ns.sio('has-target')];
+            });
+
         // Source, target, edge
-        var elements = $scope.getElements(result);
-        // console.log(elements);
+        var elements = {}
+        $scope.getElements(result).forEach(function(d) {
+            elements[d.data.uri] = d;
+        });
 
-        // Populated with [source, target, edge] of interactions as well as 
-        // the chain needed to find them from the original elements in the graph
-        var filteredEle = [];
-        // Populated with [source, target, edge] of potentially non-relevant 
-        // edge interactions
-        var notfilteredEle = [];
+        var addToGraph = [];
+        var expand = [];
 
-        // Calculates the probability of the connection
-        var probOfConnection = function(source) {
-            var prev = $scope.currStep - 1;
-            if (prev < 0) { return 1; }
-            // Looking at all targets
-            for (j = 0; j < $scope.prevEle[prev].length; j++) {
-                if (source === $scope.prevEle[prev][j].data.id) {
-                    return $scope.prevEle[prev][j].data.prob;
-                }
-            }
-        };
-
+        var typeMapping = {
+            "http://semanticscience.org/resource/activator":"activator",
+            "http://semanticscience.org/resource/inhibitor":"inhibitor",
+            "http://semanticscience.org/resource/protein": "protein",
+            "http://semanticscience.org/resource/SIO_010056":"disease",
+            "http://semanticscience.org/resource/drug": "drug",
+            "Agonist":"activation",
+            "Metabolite":"activation",
+            "Receptor Agnoist Activity":"activation", 
+            "Antagonist":"inhibition",
+            "Receptor Inhibitor Activity":"inhibition",
+            "Physical Association":"association",
+            "Aggregation":"association",
+            "Colocalization":"association", 
+            "Phosphorylation Reaction":"reaction", 
+            "Protein Cleavage":"cleavage",
+            "Cleavage Reaction":"cleavage", 
+            "Molecule Connection":"interaction",
+            "Effector":"interaction",
+            "Direct Interaction":"interaction",
+            "Association":"interaction"
+        }
         var checkConnection = function(x, edge) {
-            for (var nodetype in $scope.filter["customNode"]) {
-                // If the node type needs to be filtered out...
-                if (!$scope.filter["customNode"][nodetype]) {
-                    if ((nodetype == "activator" && x["http://semanticscience.org/resource/activator"]) 
-                        || (nodetype == "inhibitor" && x["http://semanticscience.org/resource/inhibitor"])
-                        || (nodetype == "protein" && x["http://semanticscience.org/resource/protein"])
-                        || (nodetype == "disease" && x["http://semanticscience.org/resource/SIO_010056"])
-                        || (nodetype == "drug" && x["http://semanticscience.org/resource/drug"])
-                        || (nodetype == "undef" && Object.getOwnPropertyNames(x).length === 0)) {
-                        return false;
-                    }
-                }
-            }
-            for (var edgetype in $scope.filter["customEdge"]) {
-                // If the edge type needs to be filtered out...
-                if (!$scope.filter["customEdge"][edgetype]) {
-                    if ((edgetype == "activation" && (edge=="Agonist" || edge=="Cofactor" || edge=="Metabolite" || edge=="Receptor Agnoist Activity")) 
-                        || (edgetype == "inhibition" && (edge=="Antagonist" || edge=="Receptor Inhibitor Activity"))
-                        || (edgetype == "association" && (edge=="Physical Association" || edge=="Aggregation" || edge=="Colocalization")) 
-                        || (edgetype == "reaction" && edge=="Phosphorylation Reaction") 
-                        || (edgetype == "cleavage" && (edge=="Protein Cleavage" || edge=="Cleavage Reaction")) 
-                        || (edgetype == "interaction" && (edge=="Molecule Connection" || edge=="Effector" || edge=="Direct Interaction" || edge=="Association"))) {
-                        return false;
-                    }
-                }
-            }
-            return true;
+            var keepNode = false;
+                
+            Object.keys(x).forEach(function(type) {
+                if ($scope.filter.customNode[typeMapping[type]])
+                    keepNode = true;
+            });
+            keepNode = keepNode || $scope.filter.customNode.undef;
+            keepNode = keepNode && $scope.filter.customEdge[typeMapping[edge]];
+            return keepNode;
         };
 
         // Split elements in graph to relevant or non-relevant. 
-        if ($scope.check == "downstream") {
-            for (i = 1; i < elements.length; i+=3) {
-                var prob = probOfConnection(elements[i-1].data.id) * elements[i+1].data.probability;
-                if (prob >= $scope.probThreshold) {
-                    elements[i].data.prob = prob;
-                    var trace = [elements[i-1]];
-                    if ($scope.traces[elements[i-1].data.uri] != null) {
-                        trace = $scope.traces[elements[i-1].data.uri].slice();
-                    } 
-                    trace.push(elements[i+1]);
-                    trace.push(elements[i]);
-                    $scope.traces[elements[i].data.uri] = trace;
+        links.forEach(function(link) {
+            var near = $scope.check == 'downstream' ? 
+                link[$scope.ns.sio('has-participant')][0] :
+                link[$scope.ns.sio('has-target')][0];
 
-                    satisfies = checkConnection(elements[i].data.types, elements[i+1].data.types)
-                    if (satisfies) {
-                        filteredEle.push(elements[i]);
-                        // Add if the data.type isn't a disease
-                        if (typeof elements[i].data.types['http://semanticscience.org/resource/SIO_010056'] == "undefined") {
-                            notfilteredEle.push(elements[i-1]);
-                            notfilteredEle.push(elements[i]);
-                            notfilteredEle.push(elements[i+1]);
-                        }
-                    }
-                    else {
-                        notfilteredEle.push(elements[i-1]);
-                        notfilteredEle.push(elements[i]);
-                        notfilteredEle.push(elements[i+1]);
-                    }
-                }
+            var far = $scope.check == 'downstream' ? 
+                link[$scope.ns.sio('has-target')][0] :
+                link[$scope.ns.sio('has-participant')][0];
+
+            elements[far.uri].data.stepCount = elements[near.uri].data.stepCount + 1;
+            var prob = elements[near.uri].data.prob * elements[link.uri].data.probability;
+            if (prob >= $scope.probThreshold) {
+                elements[far.uri].data.prob = prob;
+                var trace = [elements[near.uri]];
+                if ($scope.traces[near.uri] != null) {
+                    trace = $scope.traces[near.uri].slice();
+                } 
+                trace.push(elements[link.uri]);
+                trace.push(elements[far.uri]);
+                $scope.traces[far.uri] = trace;
+                var satisfies = checkConnection(elements[far.uri].data.types, elements[link.uri].data.types);
+                if (satisfies) addToGraph.push(far);
+                if (elements[far.uri].data.stepCount < $scope.numSearch) expand.push(far);
             }
-        } else {
-            notfilteredEle = elements;
-            for (i = 0; i < elements.length; i+=3) {
-                var prob = probOfConnection(elements[i+1].data.id) * elements[i+2].data.probability;
-                if (prob >= $scope.probThreshold) {
-                    elements[i].data.prob = prob;
-                    var trace = [elements[i+1]];
-                    if ($scope.traces[elements[i+1].data.uri] != null) {
-                        trace = $scope.traces[elements[i+1].data.uri].slice();
-                    } 
-                    trace.push(elements[i+2]);
-                    trace.push(elements[i]);
-                    $scope.traces[elements[i].data.uri] = trace;
-
-                    satisfies = checkConnection(elements[i].data.types, elements[i+2].data.types)
-                    if (satisfies) {
-                        filteredEle.push(elements[i]);
-                    }
-                }
-            }
-        }
-
-        // Saves the non-disease for linking further searches
-        $scope.prevEle[$scope.currStep] = notfilteredEle;
+        });
 
         var resultElements = [];
-        // For all diseases found, create chain to original selected node source
-        filteredEle.forEach( function(element) {
+        // For all destinations found, create chain to original selected node source
+        addToGraph.forEach( function(element) {
             // console.log("adding trace",$scope.traces[element.data.uri]);
-            resultElements = resultElements.concat($scope.traces[element.data.uri]);
+            resultElements = resultElements.concat($scope.traces[element.uri]);
         });
 
         $scope.cy.add(resultElements);
 
-        // If the search is not the last...
-        if($scope.currStep < $scope.numSearch) {
-            var targets = {};
-            var i;
-            if ($scope.check === "downstream") { i = 1; } else { i = 0; }
-            for (i; i < notfilteredEle.length; i+=3) {
-                targets[notfilteredEle[i].data.uri] = true;
-            }
-            $scope.currStep += 1;
-            // Need to do second downstream on all other nodes and then look for diseases. 
+        // Need to do another all other nodes and then look for diseases. 
+        var toExpand = expand.slice();
+        while (toExpand.length > 0) {
             var g = new $.Graph();
-            Object.keys(targets).forEach(function(d) {
-                $scope.createResource(d,g);
+            toExpand.splice(0,10).forEach(function(d) {
+                $scope.createResource(d.uri,g);
             });
-            if ($scope.check == "downstream"){
-                $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-            } else {
-                // upstream only getting one set of upstream results?
-                // Debugging doesn't bring me back to another call of getCustomResults
-                $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-            }
+            var service = $scope.services[$scope.check];
+            service(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
         }
-        else {
-            if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
-            $scope.cy.layout($scope.layout);
+        if (expand.length == 0) {
             $scope.$apply(function(){ $scope.loading = false; });
-            $scope.loaded = result.resources.length;
-            return;
         }
+        if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
+        $scope.cy.layout($scope.layout);
+        $scope.loaded += resultElements.filter(function(d){ return d.group == 'edges'}).length;
     }
 
 
@@ -890,14 +846,16 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     });
     // Find custom expansions
     $scope.customquery = function(type) {
+        $scope.loaded = 0;
         $scope.numSearch = parseInt($scope.numSearch);
         $scope.probThreshold = parseFloat($scope.probThreshold);
         if ($scope.numSearch < 0 || $scope.probThreshold < 0) { return; }
         $scope.traces = {};
         $scope.cy.$('node:selected').nodes().each(function(i,d) {
             $scope.selectedEle = d.data('id');
+            d.data().prob = 1;
+            d.data().stepCount = 0;
         });
-        $scope.currStep = 0;
         $scope.prevEle = new Array($scope.numSearch + 1);
         $scope.loading = true;
         var g = new $.Graph();
