@@ -41,6 +41,9 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         return d[$scope.ns.pml('answers')];
                     }).map(function(d) {
                         var result = d[$scope.ns.rdfs('label')][0];
+                        var j = d.uri.indexOf('/', 18) + 1;
+                        var dbid = d.uri.substring(j);
+                        result += " - " + dbid;
                         $scope.searchTermURIs[result] = d.uri;
                         return result;
                     })
@@ -191,8 +194,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     }
                     var edge = e.cyTarget;
                     var table = infolist(edge.data().data);
-                    $("#edgeoverview").html(
-                        "<p><strong>Interaction:</strong> " + edge.data().types + "</p><p><strong>Probability:</strong> " + edge.data().probability + "</p><p><strong>Z-Score:</strong> " + edge.data().zscore + "</p><ul id='dbref'><strong>Databases Referenced:</strong> " + db() + "</ul>"); 
+                    var info = "<p><strong>Interaction:</strong> " + edge.data().types + "</p>";
+
+                    // if (edge.data().desc != null) { info = info + "<p><strong>Description:</strong> " + edge.data().desc + "</p>"; }
+                    
+                    info = info + "<p><strong>Probability:</strong> " + edge.data().probability + "</p>";
+                    info = info + "<p><strong>Z-Score:</strong> " + edge.data().zscore + "</p>";
+                    info = info + "<ul id='dbref'><strong>Databases Referenced:</strong> " + db() + "</ul>";
+                    $("#edgeoverview").html(info);
                     $("#edgetable").html('<table class="table"><thead><tr><th>Database</th><th>Interaction Type</th><th>Probability</th></tr></thead><tbody>' + table + '</tbody></table>');
                     $('#tabs a[href="#edgeinfo"]').tab('show'); 
                     $("#edgeask").addClass('hidden');
@@ -208,9 +217,18 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     $scope.bfsrun = false;
                     $('#tabs a[href="#explore"]').tab('show'); 
                     $("#nodeask").addClass('hidden');
-                    $("#nodeoverview").html(    
-                        "<h3>Node: " + node.data().label + "</h3>"
-                    );
+                    var info = "<h3>Node: " + node.data().label + "</h3>"; 
+                    $("#nodeoverview").html(info);
+
+                    /*
+                    info = "<li>Organism: " + node.data().organism + "</li>";
+                    info = info + "<li>Gene name: " + node.data().genename + "</li>";
+                    if (node.data().db != null ) { info = info + "<li>Source: " + node.data().db + "</li>"; }
+                    if (node.data().desc != null) { info = info + "<li>Description: " + node.data().desc + "</li>"; }
+                    if (node.data().dburl != null) { info = info + "<li><a href='" + node.data().dburl + "'>Database URL</a></li>"; }
+                    $("#nodetable").html(info);
+                    */
+
                     $("#nodeopts").removeClass('hidden');
                     $("#edgeask").removeClass('hidden');
                     $('#edgeoverview').html("");
@@ -876,11 +894,12 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 }
             }
         }
-        if ($scope.check == "downstream") { 
-            $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        } else if ($scope.check == "upstream") {
-            $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        }
+        // if ($scope.check == "downstream") { 
+        //     $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        // } else if ($scope.check == "upstream") {
+        //     $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        // }
+        $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
     }
 
     /* Refining screen layout */
