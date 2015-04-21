@@ -22,11 +22,54 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
             $scope.searchTerms = ui.item.label;
             $('.searchBox').val(ui.item.label);
+            $("#infobox").css("display","none");
             return false;
+        },
+        close: function( event, ui ) {
+            $("#infobox").css("display","none");
         },
         focus: function( event, ui ) {
             if (ui.item.label === "No Matches Found") { ui.item.label = ""; }
             $('.searchBox').val(ui.item.label);
+
+            // Add infobox
+            $('#infobox').css({
+                "display": "block",
+                "border": "1px solid #BDBDBD"
+            });
+            if ($("#initial").css("display") === "none") {
+                $("#infobox").css({
+                    "margin":"1em",
+                    "width":"auto",
+                    "max-width":"45%",
+                });
+                if ($(window).width() > 768) {
+                    $("#infobox").css("left", "25%");
+                } else {
+                    $("#infobox").css("left", "50%");
+                }
+            }
+
+            // Get preview information
+            var g = new $.Graph();
+            $scope.createResource($scope.searchTermURIs[$.trim(ui.item.label)],g);
+            $scope.services.preview(g, function(result){
+                var elements = $scope.getElements(result);
+                var diseases=elements.filter(function(e){
+                    return e.data.types["http://semanticscience.org/resource/SIO_010056"];
+                });
+                var proteins=elements.filter(function(e){
+                    return e.data.types["http://semanticscience.org/resource/protein"];
+                });
+                var l = ui.item.label.indexOf(' - ');
+                var label = ui.item.label.substring(0,l);
+                $("#infobox").html(
+                    "<span>Closest connections to <strong>" + label + "</strong>:</span> <ul>" +
+                    "<li>Found <strong>" + result.resources.length + "</strong> nodes</li>" +
+                    "<li>Number of diseases: <strong>" + diseases.length + "</strong></li>" +
+                    "<li>Number of proteins: <strong>" + proteins.length + "</strong></li></ul>"
+                );
+            });
             return false;
         },
         source: function(query, process) {
@@ -264,13 +307,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         pml: $.Namespace("http://provenanceweb.org/ns/pml#"),
         sio: $.Namespace("http://semanticscience.org/resource/"),
         dcterms: $.Namespace("http://purl.org/dc/terms/"),
-        local: $.Namespace("urn:redrugs:"),
+        local: $.Namespace("urn:redrugs:")
     };
     $scope.services = {
         search: $.SadiService("/api/search"),
         process: $.SadiService("/api/process"),
         upstream: $.SadiService("/api/upstream"),
         downstream: $.SadiService("/api/downstream"),
+        preview: $.SadiService("/api/preview")
     };
 
 

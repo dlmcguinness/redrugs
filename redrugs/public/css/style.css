@@ -50,6 +50,12 @@ form { margin: 0; padding: 0; }
 #initial h1 {
   margin-bottom: 0.5em;
 }
+#initial h2 {
+  font-weight:normal;
+  font-size: 1.2em;
+  text-align: center;
+  line-height: 1.1em;
+}
 #initial label {
   font-size: 1.2em;
   padding-top: 0.3em;
@@ -70,6 +76,29 @@ form { margin: 0; padding: 0; }
   padding: 1.5em 1em;
   display: none;
   float: left;
+}
+#infobox {
+  display: none;
+  z-index: 100 !important;
+  background-color: #FFF;
+  position: absolute;
+  float: left;
+  padding: 1em;
+  border-radius: 0.5em;
+  margin: 13em 0.5em 0px;
+}
+@media (max-width: 700px) { 
+  #infobox {
+    display: block;
+    position: relative;
+    width:33%;
+    min-height: 100px;
+  }
+}
+#infobox span {
+  font-size: 1em;
+  text-transform: uppercase;
+  font-family: 'Muli', sans-serif;
 }
 
 /* 

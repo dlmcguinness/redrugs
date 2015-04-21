@@ -19,14 +19,17 @@ import sadi
 
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+#This hides all the methods and classes in this module from other modules calling "from api import *"
 __all__ = ['RootController']
+
 
 def lru(original_function, maxsize=1000):
     mapping = {}
 
-    PREV, NEXT, KEY, VALUE = 0, 1, 2, 3         # link fields
+    PREV, NEXT, KEY, VALUE = 0,
+    # 1, 2, 3         # link fields
     head = [None, None, None, None]        # oldest
-    tail = [head, None, None, None]   # newest
+    tail = [head, None, None, None]   #  newest
     head[NEXT] = tail
 
     def fn(*key):
@@ -54,14 +57,17 @@ def lru(original_function, maxsize=1000):
         return value
     return fn
 
-
+#reduce continuously combines the first two arguments of nums with lambda, puts the result at the beginning of the list
+#until there's only 1 element in the list 
 def geomean(nums):
     return float(reduce(lambda x, y: x*y, nums))**(1.0/len(nums))
 
 def logLikelihood(p):
+    #Return the inverse hyperbolic tangent of 2*p-1.
     return math.atanh(2*p-1)
 
 def confidenceVote(nums):
+    #tanh returns the hyperbolic tangent of the argument
     return (math.tanh(sum([math.atanh(2*x-1) for x in nums])) +1)/2
 
 downstreamQueryTemplate = NewTextTemplate('''
@@ -247,7 +253,10 @@ class InteractionsInBiologicalProcessService(InteractionsService):
     name = "process"
 
     def create_query(self, search):
+        #generate a string with the single parameter - search, using template defined as processAppendQueryTemplate
         q = processAppendQueryTemplate.generate(Context(search=search)).render()
+        #print the query
+        #print q
         return q
 
     def getInputClass(self):
@@ -264,7 +273,10 @@ class FindUpstreamAgentsService(InteractionsService):
     name = "upstream"
 
     def create_query(self,search):
+        #generate a string with the single parameter - search, using template defined
         q = upstreamQueryTemplate.generate(Context(search=search)).render() 
+        #print the query
+        #print q
         return q
 
     def getInputClass(self):
@@ -281,7 +293,10 @@ class FindDownstreamTargetsService(InteractionsService):
     name = "downstream"
 
     def create_query(self,search):
+        #generate a string with the single parameter - search, using template defined
         q = downstreamQueryTemplate.generate(Context(search=search)).render() 
+        #print the query
+        #print q
         return q
 
     def getInputClass(self):
@@ -289,6 +304,8 @@ class FindDownstreamTargetsService(InteractionsService):
 
     def getOutputClass(self):
         return sio.target
+
+
 
 class TextSearchService(sadi.Service):
     label = "Resource Text Search"
@@ -316,6 +333,8 @@ class TextSearchService(sadi.Service):
             answer = o.graph.resource(a[1])
             answer.add(rdflib.RDFS.label, rdflib.Literal(rdflib.Literal(a[0])))
             answer.add(pml.answers,o.identifier)
+        #
+        #print answers
 
     #@lru
     def get_matches(self,search):
@@ -331,7 +350,10 @@ class TextSearchService(sadi.Service):
         result = [[y for y in x] for x in resultSet]
         return result
 
+#A function decorator that overrides the start_response, 
+#which is a function parameter and is passed to the function being decorated
 def wsgi_wrap(fn):
+    #the new function
     def call(self):
         tglocals = request.environ['tg.locals']
         def start_response(status, headers, exc_info=None):
@@ -340,7 +362,9 @@ def wsgi_wrap(fn):
             if exc_info:
                 response.headerlist = exc_info
         tglocals.request.body = request.environ['request_body']
-        return fn(self,tglocals.request.environ, start_response)
+        #return the old function with modified arguments
+        return fn(self, tglocals.request.environ, start_response)
+    #return the new function to replace the old function
     return call
 
 exp = expose()
@@ -354,22 +378,38 @@ class ApiController(BaseController):
     _downstream = FindDownstreamTargetsService()
     _search = TextSearchService()
 
+    #an empty expose decorator says that you want the method to be available on the web, 
+    #but that you’ll handle all of the content formatting and header setting
     @expose()
     @wsgi_wrap
     def process(self,environ, start_response):
-        return self._process(environ, start_response)
+        #Sadi.Service.__call__() is going to call this start_response with status and response_headers
+        process_return=self._process(environ, start_response)
+        return process_return
 
     @expose()
     @wsgi_wrap
     def upstream(self,environ, start_response):
+
         return self._upstream(environ, start_response)
 
     @expose()
     @wsgi_wrap
     def downstream(self,environ, start_response):
-        return self._downstream(environ, start_response)
+        downstream_return=self._downstream(environ, start_response)
+        return downstream_return
 
     @expose()
     @wsgi_wrap
     def search(self,environ, start_response):
         return self._search(environ, start_response)
+
+    #provide a preview of the number of incoming links and outgoing links within only 1 or 2 steps (Change)
+    @expose()
+    @wsgi_wrap
+    def preview(self,environ, start_response):
+        #
+        downstream_return=self._downstream(environ, start_response)
+        #print "downstream returns: "+downstream_return[0]
+        return downstream_return[0]
+

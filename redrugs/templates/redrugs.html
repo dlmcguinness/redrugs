@@ -13,13 +13,17 @@
 </head>
 
 <body data-ng-controller="ReDrugSCtrl">
-
   <!-- 
    The initial "start" section with centered search box
   --> 
-  <div id="initial" class="container-fluid col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+  <div id="infobox" class="col-sm-3 col-md-3 hidden-xs"></div>
+  <div id="initial" class="container-fluid col-sm-6 col-sm-offset-3 col-md-6 col-md-offset-3">
     <h1>Repurposing Drugs with Semantics</h1>
-    <form class="form-horizontal" role="form" data-ng-submit="search(searchTerms)">
+      <!-- Make sure screen size is larger than 800px -->
+    <div id="error" class="visible-xs">
+      <h2>Sorry, but this application cannot be viewed on screens smaller than 768px.</h2>
+    </div>
+    <form class="form-horizontal hidden-xs" role="form" data-ng-submit="search(searchTerms)">
       <label for="startSearch">Search for Biological Entity:</label>
       <input id="startSearch" class="searchBox col-sm-9" data-ng-model="searchTerms" type="text" placeholder="Drug, gene, or disease. ex. Topiramate" autofocus="autofocus" />
       <button type="submit" class="btn btn-default col-sm-3 searchbtn">Search</button>
@@ -36,7 +40,7 @@
   <!--
     GUI
   -->
-  <div id="interface-wrapper" class="col-sm-5 col-md-3">
+  <div id="interface-wrapper" class="col-md-3 hidden-xs">
     <p id="minimize" class="col-md-12">
       <i class="fa fa-caret-up"></i> <span>Hide sidebar</span>
     </p>
@@ -379,15 +383,10 @@
     </div>
   </div>
 
-  <!--
-    Hide/Show Options button
-  -->
-<!--   <a id="mininterface" class="col-md-2 col-md-offset-5 col-sm-12 col-xs-12"><i class="fa fa-chevron-circle-up"></i> Hide Options</a> -->
-
   <!-- 
     Holds the Cytoscape.js object
   -->
-  <div id="results" class="col-sm-7 col-md-9"></div>
+  <div id="results" class="col-md-9 hidden-xs"></div>
   
 <!-- 
   SCRIPTS 
