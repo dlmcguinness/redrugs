@@ -938,12 +938,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 }
             }
         }
-        // if ($scope.check == "downstream") { 
-        //     $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        // } else if ($scope.check == "upstream") {
-        //     $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        // }
-        $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        if ($scope.check == "downstream") { 
+            $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        } else if ($scope.check == "upstream") {
+            $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+        }
     }
 
     /* Refining screen layout */
