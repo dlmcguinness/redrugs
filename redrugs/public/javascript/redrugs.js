@@ -37,7 +37,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 "display": "block",
                 "border": "1px solid #BDBDBD"
             });
-            if ($("#initial").css("display") === "none") {
+            if (document.getElementById("initial") === null) {
                 $("#infobox").css({
                     "margin":"1em",
                     "width":"auto",
@@ -678,7 +678,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     };
     // Starts the search for given elements and its nearest downstream neighbors
     $scope.search = function(query) {
-        $('#initial').css("display", "none");
+        $('#initial').remove();
         $('#interface, #explore, #minimize').css("visibility", "visible");
         $scope.loading = true;
         var g = new $.Graph();
@@ -938,9 +938,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 }
             }
         }
-        if ($scope.check == "downstream") { 
+        if ($scope.check === "downstream" || type === "all") { 
             $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        } else if ($scope.check == "upstream") {
+        } 
+        if ($scope.check === "upstream" || type === "all") {
             $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
         }
     }

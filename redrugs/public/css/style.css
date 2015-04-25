@@ -36,6 +36,12 @@ form { margin: 0; padding: 0; }
     padding-bottom: 2em;
 }
 
+.ui-autocomplete { 
+  max-height: 400px; 
+  overflow-y: scroll; 
+  overflow-x: hidden;
+}
+
 /*
  * INITIAL SEARCH
  */
@@ -56,14 +62,32 @@ form { margin: 0; padding: 0; }
   text-align: center;
   line-height: 1.1em;
 }
-#initial label {
+#initial label, #initial span {
   font-size: 1.2em;
   padding-top: 0.3em;
+  display: inline;
 }
 #initial .searchbtn, .searchBox {
   height: 2.0em !important;
   line-height: 1.5em !important;
 }
+#initial .searchtype {
+  position: relative;
+  top: 5px;
+}
+.searchbtn, .searchBox {
+  z-index: 10;  
+}
+.searchtype {
+  z-index: 0;
+}
+.searchtype label {
+  padding-top: 1em;
+}
+.searchtype input {
+  margin: -2px 2px 0 0.5em;
+}
+
 #help {
   cursor: pointer;
   float: right;
