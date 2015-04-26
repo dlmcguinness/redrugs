@@ -758,11 +758,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             "Molecule Connection":"interaction",
             "Effector":"interaction",
             "Direct Interaction":"interaction",
-            "Association":"interaction"
+            "Association":"interaction",
+            "Interaction with Disease":"interaction"
         }
         var checkConnection = function(x, edge) {
             var keepNode = false;
-                
             Object.keys(x).forEach(function(type) {
                 if ($scope.filter.customNode[typeMapping[type]])
                     keepNode = true;
@@ -794,7 +794,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 trace.push(elements[far.uri]);
                 $scope.traces[far.uri] = trace;
                 var satisfies = checkConnection(elements[far.uri].data.types, elements[link.uri].data.types);
-                if (satisfies) addToGraph.push(far);
+                if (satisfies) { addToGraph.push(far); }
                 if (elements[far.uri].data.stepCount < $scope.numSearch) expand.push(far);
             }
         });
@@ -808,7 +808,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
 
         $scope.cy.add(resultElements);
 
-        // Need to do another all other nodes and then look for diseases. 
+        // Need to do another search on all other nodes and then look for matches 
         var toExpand = expand.slice();
         while (toExpand.length > 0) {
             var g = new $.Graph();
