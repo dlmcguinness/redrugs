@@ -51,25 +51,25 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             }
 
             // Get preview information
-            var g = new $.Graph();
-            $scope.createResource($scope.searchTermURIs[$.trim(ui.item.label)],g);
-            $scope.services.preview(g, function(result){
-                var elements = $scope.getElements(result);
-                var diseases=elements.filter(function(e){
-                    return e.data.types["http://semanticscience.org/resource/SIO_010056"];
-                });
-                var proteins=elements.filter(function(e){
-                    return e.data.types["http://semanticscience.org/resource/protein"];
-                });
-                var l = ui.item.label.indexOf(' - ');
-                var label = ui.item.label.substring(0,l);
-                $("#infobox").html(
-                    "<span>Closest connections to <strong>" + label + "</strong>:</span> <ul>" +
-                    "<li>Found <strong>" + result.resources.length + "</strong> nodes</li>" +
-                    "<li>Number of diseases: <strong>" + diseases.length + "</strong></li>" +
-                    "<li>Number of proteins: <strong>" + proteins.length + "</strong></li></ul>"
-                );
-            });
+            // var g = new $.Graph();
+            // $scope.createResource($scope.searchTermURIs[$.trim(ui.item.label)],g);
+            // $scope.services.preview(g, function(result){
+            //     var elements = $scope.getElements(result);
+            //     var diseases=elements.filter(function(e){
+            //         return e.data.types["http://semanticscience.org/resource/SIO_010056"];
+            //     });
+            //     var proteins=elements.filter(function(e){
+            //         return e.data.types["http://semanticscience.org/resource/protein"];
+            //     });
+            //     var l = ui.item.label.indexOf(' - ');
+            //     var label = ui.item.label.substring(0,l);
+            //     $("#infobox").html(
+            //         "<span>Closest connections to <strong>" + label + "</strong>:</span> <ul>" +
+            //         "<li>Found <strong>" + result.resources.length + "</strong> nodes</li>" +
+            //         "<li>Number of diseases: <strong>" + diseases.length + "</strong></li>" +
+            //         "<li>Number of proteins: <strong>" + proteins.length + "</strong></li></ul>"
+            //     );
+            // });
             return false;
         },
         source: function(query, process) {
@@ -87,9 +87,15 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         var j = d.uri.indexOf('/', 18) + 1;
                         var dbid = d.uri.substring(j);
                         result += " - " + dbid;
+                        var count  = d[$scope.ns.sio('count')][0];
+                        result += " ("+count+" connections)";
                         $scope.searchTermURIs[result] = d.uri;
                         return result;
-                    })
+                    });
+                //keywords.sort(function(a, b) {
+                //    return parseInt(a[$scope.ns.sio('count')][0]) - parseInt(b[$scope.ns.sio('count')][0]);
+                //})
+                //keywords.reverse();
                 if (keywords.length === 0) {
                     keywords = ["No Matches Found"];
                     $(".searchbtn").attr("disabled", "disabled");
@@ -110,6 +116,14 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         name: 'arbor',
         fit: false,
         padding: [20,20,20,20],
+        circle: true,
+        concentric: function(){ 
+            //var rank = $scope.pageRank.rank(this);
+            //console.log(this, rank, this.degree());
+            //return $scope.pageRank.ordinal[rank];
+            //this.indegree() + this.outdegree();
+            return this.degree() * 10;
+        },
         maxSimulationTime: parseInt($scope.numLayout) * 1000
     };
     $scope.createGraph = function() {
@@ -172,7 +186,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
 
             ready: function(){
                 $scope.cy = cy = this;
-                cy.boxSelectionEnabled(false);
+                cy.boxSelectionEnabled(true);
 
                 // Clicking on whitespace removes all CSS changes
                 cy.on('vclick', function(e){
@@ -617,7 +631,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     details: newURI,
                     types: {},
                     resource: res
-                }
+                },
+                //position: { x: 0, y: 0}
             };
             // Remove all non-alphanumerical and replace space and underscore with hypen
             node.data.id = res[$scope.ns.rdfs('label')][0].replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-');
@@ -706,6 +721,20 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $scope.once = true;
         }
         $scope.cy.add(elements);
+        //$scope.pageRank = $scope.cy.elements().pageRank();
+        //$scope.pageRank.ordinal = {};
+        //var ranks = [];
+        //var ranked = {};
+        //$scope.cy.nodes().each(function(i, node) {
+        //    var rank = $scope.pageRank.rank(node);
+        //    if (!ranked[rank]) {
+        //        ranks.push(rank);
+        //        ranked[rank] = true;
+        //    }
+        //});
+        //ranks.sort().forEach(function(d,i) {
+        //    $scope.pageRank.ordinal[d] = i * 4;
+        //})
         setTimeout(function(){
             $scope.cy.layout($scope.layout);
             $scope.$apply(function(){ $scope.loading = false; });
@@ -717,8 +746,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.currStep = 0;
     $scope.prevEle = [];
     $scope.traces = {};
-    $scope.check = "downstream"
-    $scope.getCustomResults = function(result) {
+    $scope.getCustomResults = function(result, direction) {
         // console.log(result);
 
         var links = result.resources
@@ -774,11 +802,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
 
         // Split elements in graph to relevant or non-relevant. 
         links.forEach(function(link) {
-            var near = $scope.check == 'downstream' ? 
+            var near = direction == 'downstream' ? 
                 link[$scope.ns.sio('has-participant')][0] :
                 link[$scope.ns.sio('has-target')][0];
 
-            var far = $scope.check == 'downstream' ? 
+            var far = direction == 'downstream' ? 
                 link[$scope.ns.sio('has-target')][0] :
                 link[$scope.ns.sio('has-participant')][0];
 
@@ -808,6 +836,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
 
         $scope.cy.add(resultElements);
 
+        var service = $scope.services[direction];
         // Need to do another search on all other nodes and then look for matches 
         var toExpand = expand.slice();
         while (toExpand.length > 0) {
@@ -815,8 +844,9 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             toExpand.splice(0,10).forEach(function(d) {
                 $scope.createResource(d.uri,g);
             });
-            var service = $scope.services[$scope.check];
-            service(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
+            service(g, function(result) {
+                $scope.getCustomResults(result, direction);
+            }, $scope.graph, $scope.handleError);
         }
         if (expand.length == 0) {
             $scope.$apply(function(){ $scope.loading = false; });
@@ -890,15 +920,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             });
         }
     });
-    // Panning vs. Multiselect
-    $('#panning').click(function(){
-        $scope.cy.boxSelectionEnabled(false); 
-        $('#enablemulti').html("Enable Panning");
-    });
-    $('#multiselect').click(function(){ 
-        $scope.cy.boxSelectionEnabled(true); 
-        $('#enablemulti').html("Enable Multiple Selection");
-    });
     // Background
     $("#bgdark").click(function() {
         $('body').css("background", 'url("../img/simple_dashed_@2X.png")');
@@ -907,7 +928,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $('body').css("background", 'url("../img/agsquare_@2X.png")');
     });
     // Find custom expansions
-    $scope.customquery = function(type) {
+    $scope.runQuery = function(type, directions) {
         $scope.loaded = 0;
         $scope.numSearch = parseInt($scope.numSearch);
         $scope.probThreshold = parseFloat($scope.probThreshold);
@@ -938,12 +959,11 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 }
             }
         }
-        if ($scope.check === "downstream" || type === "all") { 
-            $scope.services.downstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        } 
-        if ($scope.check === "upstream" || type === "all") {
-            $scope.services.upstream(g, $scope.getCustomResults, $scope.graph, $scope.handleError);
-        }
+        directions.forEach(function(direction) {
+            $scope.services[direction](g, function(result) {
+                $scope.getCustomResults(result, direction);
+            }, $scope.graph, $scope.handleError);
+        });
     }
 
     /* Refining screen layout */

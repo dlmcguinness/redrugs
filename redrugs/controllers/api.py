@@ -333,20 +333,27 @@ class TextSearchService(sadi.Service):
             answer = o.graph.resource(a[1])
             answer.add(rdflib.RDFS.label, rdflib.Literal(rdflib.Literal(a[0])))
             answer.add(pml.answers,o.identifier)
+            answer.add(rdflib.URIRef("http://semanticscience.org/resource/count"),rdflib.Literal(a[2]))
         #
         #print answers
 
     #@lru
     def get_matches(self,search):
         query = '''prefix bd: <http://www.bigdata.com/rdf/search#>
-          select distinct ?o ?s  where {{
+            PREFIX sio: <http://semanticscience.org/resource/>
+
+          select distinct ?o ?s ( count(?interaction) as ?interactions) where {{
             ?o bd:search """{0}.*""" .
             ?s rdfs:label ?o.
             ?o bd:relevance ?cosine .
+            {{?interaction sio:has-participant ?s.}}
+            UNION
+            {{?interaction sio:has-target ?s.}}
+
             FILTER(isURI(?s))
-          }} order by desc(?cosine) limit 20'''.format(search)
+          }} group by ?s ?o order by desc(?interactions) limit 20'''.format(search)
+        print query
         resultSet = model.graph.query(query)
-        #print query
         result = [[y for y in x] for x in resultSet]
         return result
 

@@ -89,109 +89,55 @@
             EXPLORE CONNECTIONS
           -->
           <div role="tabpanel" class="tab-pane active" id="explore">
-            <h3>Manage Nodes</h3>
-            <div class="btn-wrap">
-              <div class="btn-group btn-group-justified" data-toggle="buttons">
-                <label class="btn active" id="panning">
-                  <input type="radio" name="options" autocomplete="off" checked="checked"/><i class="fa fa-arrows-alt"></i> Panning
-                </label>
-                <label class="btn" id="multiselect">
-                  <input type="radio" name="options" autocomplete="off"/><i class="fa fa-square-o"></i> Multiple Selection
-                </label>
+            <div class="btn-toolbar">
+              <div class="btn-group">
+                <a id="lock" title="Lock Position" data-ng-click="lock(getSelected('id'), true)" class="btn btn-small"><i class="fa fa-lock"></i></a>
+                <a id="unlock" title="Unlock Position" data-ng-click="lock(getSelected('id'), false)" class="btn btn-small"><i class="fa fa-unlock"></i></a>
+                  <a type="button" id="refresh" title="Refresh Layout" class="btn btn-small">
+                    <i class="fa fa-refresh"></i>
+                  </a>
+                  <a id="bfs" title="Highlight Connections" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn btn-small">
+                    <i class="icon-eye-open"></i> 
+                  </a>
+              </div>
+              <div class="btn-group">
+                  <a id="zoom-in" title="Zoom In" class="btn btn-small"><i class="fa fa-search-plus"></i> </a>
+                  <a id="zoom-fit" title="Zoom Out" class="btn btn-small"><i class="fa fa-search"></i></a>
+                  <a id="zoom-out" title="Zoom To Fit" class="btn btn-small"><i class="fa fa-search-minus"></i></a>
+              </div>
+              <div class="btn-group">
+                  <a type="button" title="Find Incoming Links" data-ng-click="runQuery('custom',['upstream'])" class="btn btn-small">
+                    <i class="fa fa-backward"></i>
+                  </a>
+                  <a type="button" title="Find Incoming and Outgoing Links" data-ng-click="runQuery('custom',['upstream','downstream'])" class="btn btn-small">
+                    <i class="fa fa-backward"></i> <i class="fa fa-forward"></i> 
+                  </a>
+                  <a title="Find Outgoing Links" data-ng-click="runQuery('custom',['downstream'])" type="button" class="btn btn-small">
+                   <i class="fa fa-forward"></i> 
+                  </a>
               </div>
             </div>
-            <div class="btn-wrap">
-              <div class="btn-group btn-group-justified">
-                <a id="lock" data-ng-click="lock(getSelected('id'), true)" class="btn btn-small"><i class="fa fa-lock"></i> Lock Position</a>
-                <a id="unlock" data-ng-click="lock(getSelected('id'), false)" class="btn btn-small"><i class="fa fa-unlock"></i> Unlock Position</a>
-              </div>
-            </div>
-            <div class="btn-wrap">
-              <div class="btn-group btn-group-justified">
-                <a type="button" id="refresh" class="btn btn-small">
-                  <i class="fa fa-refresh"></i> Refresh Graph
-                </a>
-              </div>
-            </div>
-            <h3 class="space col-md-2">Zoom:</h3>
-            <div id="zoombtns" class="btn-wrap col-md-9">
-              <div class="btn-group btn-group-justified">
-                  <a id="zoom-in" class="btn btn-small"><i class="fa fa-search-plus"></i> </a>
-                  <a id="zoom-fit" class="btn btn-small"><i class="fa fa-search"></i></a>
-                  <a id="zoom-out" class="btn btn-small"><i class="fa fa-search-minus"></i></a>
-              </div>
-            </div>
-              <h3>Explore Connections</h3>
-              <form id="numQuery" class="form-inline">
-                <div class="form-group">
-                  <label for="numSearch">Number of intermediate nodes: </label>
-                  <input type="text" id="numSearch" name="numSearch" data-ng-model="numSearch" value="1" />
-                </div>
-                <div class="form-group">
-                  <label for="probThreshold">Minimum Probability: </label>
-                  <input type="text" id="probThreshold" name="probThreshold" data-ng-model="probThreshold" value="0.95" />
-                </div>
-                <div class="form-group">
-                  <input type="radio" id="incoming" class="radio inline" name="incoming" value="upstream" data-ng-model="check"/> 
-                  <label for="incoming">Find all Incoming Links</label>
-                </div>
-                <div class="form-group">
-                  <input type="radio" id="outgoing" class="radio inline" name="outgoing" value="downstream" data-ng-model="check"/> 
-                  <label for="outgoing">Find all Outgoing Links</label>
-                </div>
-              </form>
-              <div class="btn-wrap">
-                <div class="btn-group btn-group-justified">
-                  <a type="button" data-ng-click="customquery('all')" class="btn btn-small">
-                    <i class="fa fa-backward"></i> Explore Links <i class="fa fa-forward"></i> 
-                  </a>
-                </div>
-              </div>
-              <div class="btn-wrap"> 
-                <div class="btn-group btn-group-justified">
-                  <a type="button" data-ng-click="getUpstream(getSelected('uri'))" class="btn btn-small">
-                    <i class="fa fa-backward"></i> Find Incoming Links
-                  </a>
-                  <a data-ng-click="getDownstream(getSelected('uri'))" type="button" class="btn btn-small">
-                    Find Outgoing Links <i class="fa fa-forward"></i> 
-                  </a>
-                </div>
-              </div>
-              <div class="btn-wrap">
-                <div class="btn-group btn-group-justified">
-                  <a id="bfs" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn btn-small">
-                    <i class="icon-eye-open"></i> Highlight Connections
-                  </a>
-                </div>
-              </div>
-              <h3 class="space dspace">Find nearby:</h3>
-              <div class="btn-wrap">
-                <div class="btn-group btn-group-justified">
-                  <a type="button" data-ng-click="customquery('disease')" class="btn btn-small">
-                    <i class="fa fa-search"></i> Diseases
-                  </a>
-                  <a type="button" data-ng-click="customquery('protein')" class="btn btn-small">
-                    <i class="fa fa-search"></i> Proteins
-                  </a>
-                  <a type="button" data-ng-click="customquery('drug')" class="btn btn-small">
-                    <i class="fa fa-search"></i> Drugs
-                  </a>
-                </div>
-              </div>
-              
               <div class="panel-group" id="accordion" role="tablist">
                 <div class="panel panel-default">
                   <div class="panel-heading" role="tab" id="customqueryhdg">
                     <h4 class="panel-title">
                       <a class="collapsed" data-toggle="collapse" href="#customquery" aria-expanded="false" aria-controls="customquery">
-                        <h4><i class="fa fa-cog"></i> Custom Query</h4>
+                        <h4><i class="fa fa-cog"></i> Search Options</h4>
                       </a>
                     </h4>
                   </div>
                   <div id="customquery" class="panel-collapse collapse" role="tabpanel" aria-labelledby="customqueryhdg">
                     <div class="panel-body">
-                      <h4>Search for the following links: </h4>
                       <form class="form-inline custom">
+                        <h3>Traversal</h3>
+                        <div class="form-group">
+                          <label for="numSearch">Link distance: </label>
+                          <input type="text" id="numSearch" name="numSearch" data-ng-model="numSearch" value="1" />
+                        </div>
+                        <div class="form-group">
+                          <label for="probThreshold">Minimum joint probability: </label>
+                          <input type="text" id="probThreshold" name="probThreshold" data-ng-model="probThreshold" value="0.95" />
+                        </div>
                         <div class="form-group" id="customNode">
                           <h3>Node types: </h3>
                           <div class="chkbx">
@@ -246,7 +192,6 @@
                             <label for="interaction">Interaction</label>
                           </div>
                         </div>
-                        <p class="col-md-12">This process may take several minutes to complete. Do you wish to continue? <button id="submitCustom" data-ng-click="customquery('custom')">Continue</button></p>
                       </form>
                     </div>
                   </div>
@@ -354,7 +299,15 @@
                 <input type="radio" class="radio inline" name="optCose" value="cose" data-ng-model="layout.name"/> <span>Cose</span>
               </div>
               <div class="form-group">
-                <input type="radio" class="radio inline" name="optBF" value="breadthfirst" data-ng-model="layout.name"/> <span>Breadth First</span>
+                <input type="radio"
+                       class="radio inline"
+                       name="optBF"
+                       value="breadthfirst"
+                       data-ng-model="layout.name"/>
+                <span>Breadth First</span>
+              </div>
+              <div class="form-group">
+                <input type="radio" class="radio inline" name="optRandom" value="concentric" data-ng-model="layout.name"/> <span>Concentric</span>
               </div>
               <div class="form-group">
                 <input type="radio" class="radio inline" name="optRandom" value="random" data-ng-model="layout.name"/> <span>Random</span>
@@ -407,6 +360,7 @@
 <script type="text/javascript" src="../javascript/cytoscape.min.js"></script>
 <script type="text/javascript" src="../javascript/arbor.js"></script>
 <script type="text/javascript" src="../javascript/springy.js"></script>
+<script type="text/javascript" src="../javascript/collection-algorithms2.js"></script>
 <script type="text/javascript" src="../javascript/redrugs.js"></script>
 <!-- <script type="text/javascript" src="../javascript/osc.js"></script> -->
 <!--<script type="text/javascript" src="http://127.0.0.1:8081/socket.io/socket.io.js"></script>-->
