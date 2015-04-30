@@ -1,0 +1,224 @@
+@prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix nci:	<http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl#> .
+nci:C40078	rdfs:label	"Ovarian Clear Cell Adenocarcinoma"^^xsd:string .
+<http://purl.bioontology.org/ontology/SNOMEDCT/255039001>	rdfs:label	"Pancreatic polypeptidoma"@EN .
+@prefix ns3:	<http://www.ebi.ac.uk/efo/> .
+ns3:EFO_0003025	rdfs:label	"acute megakaryoblastic leukaemia"^^xsd:string .
+@prefix ns4:	<http://www.orpha.net/ORDO/> .
+ns4:Orphanet_1962	rdfs:label	"Exostoses - anetodermia - brachydactyly type E"^^xsd:string .
+nci:Aldosterone_Producing_Adrenal_Cortex_Adenoma	rdfs:label	"Aldosterone-Producing Adrenal Cortex Adenoma"^^xsd:string .
+nci:Diffuse_Large_B-Cell_Lymphoma_with_an_Activated_B-Cell_Expression_Profile	rdfs:label	"Activated B-Cell-Like Diffuse Large B-Cell Lymphoma"^^xsd:string .
+<http://purl.bioontology.org/ontology/SNOMEDCT/103686008>	rdfs:label	"Intestinal T-cell lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/125541005>	rdfs:label	"Mast cell hyperplasia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/126832004>	rdfs:label	"Neoplasm of small intestine"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/127020005>	rdfs:label	"Neoplasm of parathyroid gland"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128474007>	rdfs:label	"Parathyroid adenoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128664001>	rdfs:label	"Pituitary adenoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128735004>	rdfs:label	"Desmoplastic small round cell tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128744003>	rdfs:label	"Angiomatoid fibrous histiocytoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128753005>	rdfs:label	"Stromal sarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128763002>	rdfs:label	"Pleuropulmonary blastoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128801005>	rdfs:label	"Mediastinal large B-cell lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128802003>	rdfs:label	"Splenic marginal zone B-cell lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128805001>	rdfs:label	"NK/T-cell lymphoma, nasal and nasal-type"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128820007>	rdfs:label	"Prolymphocytic leukemia, B-cell type"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128824003>	rdfs:label	"Precursor T-cell lymphoblastic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128831004>	rdfs:label	"Chronic myelomonocytic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/128854008>	rdfs:label	"Pilocytic astrocytoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/188734009>	rdfs:label	"Chronic neutrophilic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/203468000>	rdfs:label	"Aneurysmal bone cyst"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/254656002>	rdfs:label	"Squamous cell carcinoma in situ of skin"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/254700008>	rdfs:label	"Trichodiscoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/254701007>	rdfs:label	"Basal cell carcinoma of skin"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/255036008>	rdfs:label	"Adrenal adenoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/25603007>	rdfs:label	"Ossifying fibroma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/271944004>	rdfs:label	"Clear cell sarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/274087000>	rdfs:label	"Malignant melanoma of eye"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277545003>	rdfs:label	"T-cell chronic lymphocytic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277567002>	rdfs:label	"T-cell prolymphocytic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277569004>	rdfs:label	"Large granular lymphocytic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277572006>	rdfs:label	"Pre B-cell acute lymphoblastic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277575008>	rdfs:label	"T-cell acute lymphoblastic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277589003>	rdfs:label	"Atypical chronic myeloid leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277604002>	rdfs:label	"Acute eosinophilic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277844007>	rdfs:label	"Pulmonary lymphangioleiomyomatosis"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/277984002>	rdfs:label	"Embryonal neuroepithelial tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/38406003>	rdfs:label	"Mesenchymoma, benign"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/399994005>	rdfs:label	"Desmoid fibromatosis"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/400210000>	rdfs:label	"Hemangioma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/403981003>	rdfs:label	"Epithelioid hemangioendothelioma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/404056007>	rdfs:label	"Alveolar soft part sarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/404079008>	rdfs:label	"Extraskeletal myxoid chondrosarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/404088004>	rdfs:label	"Low-grade fibromyxoid sarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/414450004>	rdfs:label	"Idiopathic hypereosinophilic syndrome"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/420120006>	rdfs:label	"Gastrointestinal stromal tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/423708008>	rdfs:label	"Mucoepidermoid carcinoma of salivary gland"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/444910004>	rdfs:label	"Primary mediastinal (thymic) large B-cell lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/445227008>	rdfs:label	"Juvenile myelomonocytic leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/447100004>	rdfs:label	"Marginal zone lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/447888006>	rdfs:label	"Pleomorphic adenoma of salivary gland"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/449097000>	rdfs:label	"Toxic thyroid adenoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/47284001>	rdfs:label	"Aggressive fibromatosis"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/51398009>	rdfs:label	"Hamartoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/52040006>	rdfs:label	"Infantile fibrosarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/55150002>	rdfs:label	"Follicular lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/55937004>	rdfs:label	"Neuroendocrine carcinoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/56565002>	rdfs:label	"Mesenchymal chondrosarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/58961005>	rdfs:label	"Lethal midline granuloma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/6250003>	rdfs:label	"Fibromyxosarcoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/68738004>	rdfs:label	"Endometrial stromal tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/69291002>	rdfs:label	"Myoepithelioma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/69408002>	rdfs:label	"Gorlin syndrome"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/71298006>	rdfs:label	"Epithelioma, malignant"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/71440001>	rdfs:label	"Sex cord-stromal tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/74654000>	rdfs:label	"Mantle cell lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/77430005>	rdfs:label	"Adult T-cell leukemia/lymphoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/803009>	rdfs:label	"Paraganglioma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/82908000>	rdfs:label	"Dudley-Klingenstein syndrome"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/83118000>	rdfs:label	"Malignant rhabdoid tumor"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/85583005>	rdfs:label	"Pheochromocytoma"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/89454001>	rdfs:label	"Shwachman syndrome"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/91855006>	rdfs:label	"Acute leukemia"@EN .
+<http://purl.bioontology.org/ontology/SNOMEDCT/95315005>	rdfs:label	"Uterine leiomyoma"@EN .
+@prefix ns5:	<http://purl.obolibrary.org/obo/> .
+ns5:DOID_206	rdfs:label	"hereditary multiple exostoses"^^xsd:string .
+ns3:EFO_0000094	rdfs:label	"B-cell acute lymphoblastic leukemia"^^xsd:string .
+ns3:EFO_0000095	rdfs:label	"chronic lymphocytic leukemia"^^xsd:string .
+ns3:EFO_0000174	rdfs:label	"Ewings sarcoma"^^xsd:string ,
+		"Ewing sarcoma"^^xsd:string .
+ns3:EFO_0000178	rdfs:label	"gastric carcinoma"^^xsd:string .
+ns3:EFO_0000181	rdfs:label	"head and neck squamous cell carcinoma"^^xsd:string .
+ns3:EFO_0000182	rdfs:label	"hepatocellular carcinoma"^^xsd:string .
+ns3:EFO_0000183	rdfs:label	"Hodgkins lymphoma"^^xsd:string .
+ns3:EFO_0000191	rdfs:label	"MALT lymphoma"^^xsd:string .
+ns3:EFO_0000198	rdfs:label	"myelodysplastic syndrome"^^xsd:string .
+ns3:EFO_0000199	rdfs:label	"oral squamous cell carcinoma"^^xsd:string .
+ns3:EFO_0000209	rdfs:label	"T-cell acute lymphoblastic leukemia"^^xsd:string .
+ns3:EFO_0000211	rdfs:label	"unspecified peripheral T-cell lymphoma"^^xsd:string .
+ns3:EFO_0000220	rdfs:label	"acute lymphoblastic leukemia"^^xsd:string .
+ns3:EFO_0000222	rdfs:label	"acute myeloid leukemia"^^xsd:string .
+ns3:EFO_0000224	rdfs:label	"acute promyelocytic leukemia"^^xsd:string .
+ns3:EFO_0000231	rdfs:label	"adenoid cystic carcinoma"^^xsd:string .
+ns3:EFO_0000248	rdfs:label	"alveolar rhabdomyosarcoma"^^xsd:string .
+ns3:EFO_0000272	rdfs:label	"astrocytoma"^^xsd:string .
+ns3:EFO_0000292	rdfs:label	"bladder carcinoma"^^xsd:string .
+ns3:EFO_0000305	rdfs:label	"breast carcinoma"^^xsd:string .
+ns3:EFO_0000309	rdfs:label	"Burkitts lymphoma"^^xsd:string ,
+		"Burkitt's lymphoma"^^xsd:string .
+ns3:EFO_0000311	rdfs:label	"cancer"^^xsd:string .
+ns3:EFO_0000313	rdfs:label	"carcinoma"^^xsd:string .
+ns3:EFO_0000326	rdfs:label	"central nervous system cancer"^^xsd:string .
+ns3:EFO_0000331	rdfs:label	"chondroblastoma"^^xsd:string .
+ns3:EFO_0000333	rdfs:label	"chondrosarcoma"^^xsd:string .
+ns3:EFO_0000339	rdfs:label	"chronic myelogenous leukemia"^^xsd:string .
+ns3:EFO_0000349	rdfs:label	"clear cell renal carcinoma"^^xsd:string .
+ns3:EFO_0000365	rdfs:label	"colorectal adenocarcinoma"^^xsd:string .
+ns3:EFO_0000403	rdfs:label	"diffuse large B-cell lymphoma"^^xsd:string .
+ns3:EFO_0000437	rdfs:label	"embryonal rhabdomyosarcoma"^^xsd:string .
+ns3:EFO_0000466	rdfs:label	"endometrioid carcinoma"^^xsd:string .
+ns3:EFO_0000499	rdfs:label	"follicular thyroid adenoma"^^xsd:string .
+ns3:EFO_0000501	rdfs:label	"follicular thyroid carcinoma"^^xsd:string .
+ns3:EFO_0000502	rdfs:label	"ganglioneuroblastoma"^^xsd:string .
+ns3:EFO_0000519	rdfs:label	"glioblastoma multiforme"^^xsd:string .
+ns3:EFO_0000553	rdfs:label	"invasive lobular carcinoma"^^xsd:string .
+ns3:EFO_0000565	rdfs:label	"leukemia"^^xsd:string .
+ns3:EFO_0000569	rdfs:label	"liposarcoma"^^xsd:string .
+ns3:EFO_0000574	rdfs:label	"lymphoma"^^xsd:string .
+ns3:EFO_0000588	rdfs:label	"mesothelioma"^^xsd:string .
+ns3:EFO_0000616	rdfs:label	"tumour"^^xsd:string ,
+		"neoplasm"^^xsd:string .
+ns3:EFO_0000621	rdfs:label	"neuroblastoma"^^xsd:string .
+ns3:EFO_0000622	rdfs:label	"neurofibroma"^^xsd:string .
+ns3:EFO_0000632	rdfs:label	"oligodendroglioma"^^xsd:string .
+ns3:EFO_0000637	rdfs:label	"osteosarcoma"^^xsd:string .
+ns3:EFO_0000640	rdfs:label	"papillary renal cell carcinoma"^^xsd:string .
+ns3:EFO_0000641	rdfs:label	"papillary thyroid carcinoma"^^xsd:string .
+ns3:EFO_0000681	rdfs:label	"renal cell carcinoma"^^xsd:string .
+ns3:EFO_0000691	rdfs:label	"sarcoma"^^xsd:string .
+ns3:EFO_0000693	rdfs:label	"schwannoma"^^xsd:string .
+ns3:EFO_0000702	rdfs:label	"small cell lung carcinoma"^^xsd:string .
+ns3:EFO_0000731	rdfs:label	"uterine fibroid"^^xsd:string .
+ns3:EFO_0000756	rdfs:label	"melanoma"^^xsd:string .
+ns3:EFO_0000759	rdfs:label	"lipoma"^^xsd:string .
+ns3:EFO_0000762	rdfs:label	"hepatocellular adenoma"^^xsd:string .
+ns3:EFO_0001071	rdfs:label	"lung carcinoma"^^xsd:string .
+ns3:EFO_0001075	rdfs:label	"ovarian carcinoma"^^xsd:string .
+ns3:EFO_0001376	rdfs:label	"synovial sarcoma"^^xsd:string .
+ns3:EFO_0001378	rdfs:label	"multiple myeloma"^^xsd:string .
+ns3:EFO_0001663	rdfs:label	"prostate carcinoma"^^xsd:string .
+ns3:EFO_0002427	rdfs:label	"myeloid neoplasm"^^xsd:string .
+ns3:EFO_0002616	rdfs:label	"macroglobulinemia"^^xsd:string .
+ns3:EFO_0002618	rdfs:label	"pancreatic carcinoma"^^xsd:string .
+ns3:EFO_0002890	rdfs:label	"renal carcinoma"^^xsd:string .
+ns3:EFO_0002892	rdfs:label	"thyroid carcinoma"^^xsd:string .
+ns3:EFO_0002917	rdfs:label	"ovarian serous adenocarcinoma"^^xsd:string .
+ns3:EFO_0002918	rdfs:label	"rhabdomyosarcoma"^^xsd:string .
+ns3:EFO_0002939	rdfs:label	"medulloblastoma"^^xsd:string .
+ns3:EFO_0003060	rdfs:label	"non-small cell lung carcinoma"^^xsd:string .
+ns3:EFO_0003093	rdfs:label	"adrenocortical carcinoma"^^xsd:string .
+ns3:EFO_0003769	rdfs:label	"endocrine neoplasm"^^xsd:string .
+ns3:EFO_0003968	rdfs:label	"angiosarcoma"^^xsd:string .
+ns3:EFO_0004230	rdfs:label	"endometrial neoplasm"^^xsd:string .
+ns3:EFO_0004243	rdfs:label	"carcinoid tumor"^^xsd:string .
+ns3:EFO_0004281	rdfs:label	"testicular neoplasm"^^xsd:string .
+ns3:EFO_0004289	rdfs:label	"lymphoid leukemia"^^xsd:string .
+ns3:EFO_0005088	rdfs:label	"testicular carcinoma"^^xsd:string .
+ns3:EFO_0005221	rdfs:label	"cholangiocarcinoma"^^xsd:string .
+ns4:Orphanet_100	rdfs:label	"Ataxia-telangiectasia"^^xsd:string .
+ns4:Orphanet_1052	rdfs:label	"Mosaic variegated aneuploidy syndrome"^^xsd:string .
+ns4:Orphanet_109	rdfs:label	"Bannayan-Riley-Ruvalcaba syndrome"^^xsd:string .
+ns4:Orphanet_122	rdfs:label	"Birt-Hogg-Dub\u00E9 syndrome"^^xsd:string .
+ns4:Orphanet_125	rdfs:label	"Bloom syndrome"^^xsd:string .
+ns4:Orphanet_1359	rdfs:label	"Carney complex"^^xsd:string .
+ns4:Orphanet_144	rdfs:label	"Hereditary nonpolyposis colon cancer"^^xsd:string .
+ns4:Orphanet_145	rdfs:label	"Hereditary breast and ovarian cancer syndrome"^^xsd:string .
+ns4:Orphanet_171915	rdfs:label	"B-cell non-Hodgkin lymphoma"^^xsd:string .
+ns4:Orphanet_201	rdfs:label	"Cowden syndrome"^^xsd:string .
+ns4:Orphanet_211	rdfs:label	"Familial cylindromatosis"^^xsd:string .
+ns4:Orphanet_220	rdfs:label	"Denys-Drash syndrome"^^xsd:string .
+ns4:Orphanet_227535	rdfs:label	"Hereditary breast cancer"^^xsd:string .
+ns4:Orphanet_231108	rdfs:label	"Familial rhabdoid tumor"^^xsd:string .
+ns4:Orphanet_2495	rdfs:label	"Meningioma"^^xsd:string .
+ns4:Orphanet_250165	rdfs:label	"Genetic polycythemia"^^xsd:string .
+ns4:Orphanet_251274	rdfs:label	"Familial hyperaldosteronism type III"^^xsd:string ,
+		"Familial hyperaldosteronism type 3"^^xsd:string .
+ns4:Orphanet_2869	rdfs:label	"Peutz-Jeghers syndrome"^^xsd:string .
+ns4:Orphanet_29072	rdfs:label	"Hereditary pheochromocytoma-paraganglioma"^^xsd:string .
+ns4:Orphanet_2909	rdfs:label	"Rothmund-Thomson syndrome"^^xsd:string .
+ns4:Orphanet_2929	rdfs:label	"Juvenile polyposis syndrome"^^xsd:string .
+ns4:Orphanet_2930	rdfs:label	"Cronkhite-Canada syndrome"^^xsd:string .
+ns4:Orphanet_306498	rdfs:label	"PTEN hamartoma tumor syndrome"^^xsd:string .
+ns4:Orphanet_3071	rdfs:label	"Costello syndrome"^^xsd:string .
+ns4:Orphanet_31112	rdfs:label	"Dermatofibrosarcoma protuberans"^^xsd:string .
+ns4:Orphanet_347	rdfs:label	"Frasier syndrome"^^xsd:string .
+ns4:Orphanet_357027	rdfs:label	"Familial retinoblastoma"^^xsd:string .
+ns4:Orphanet_363700	rdfs:label	"Neurofibromatosis type 1 due to NF1mutation or intragenic deletion"^^xsd:string .
+ns4:Orphanet_370396	rdfs:label	"Small cell carcinoma of the ovary"^^xsd:string .
+ns4:Orphanet_373	rdfs:label	"Simpson-Golabi-Behmel syndrome"^^xsd:string .
+ns4:Orphanet_449	rdfs:label	"Hepatoblastoma"^^xsd:string .
+ns4:Orphanet_47044	rdfs:label	"Familial papillary renal cell carcinoma"^^xsd:string .
+ns4:Orphanet_523	rdfs:label	"Familial leiomyomatosis"^^xsd:string .
+ns4:Orphanet_524	rdfs:label	"Li-Fraumeni syndrome"^^xsd:string .
+ns4:Orphanet_547	rdfs:label	"Non-Hodgkin lymphoma"^^xsd:string .
+ns4:Orphanet_615	rdfs:label	"Familial atrial myxoma"^^xsd:string .
+ns4:Orphanet_618	rdfs:label	"Familial melanoma"^^xsd:string .
+ns4:Orphanet_637	rdfs:label	"Neurofibromatosis type 2"^^xsd:string .
+ns4:Orphanet_647	rdfs:label	"Nijmegen breakage syndrome"^^xsd:string .
+ns4:Orphanet_64742	rdfs:label	"Pleuropulmonary blastoma"^^xsd:string .
+ns4:Orphanet_652	rdfs:label	"Multiple endocrine neoplasia type 1"^^xsd:string .
+ns4:Orphanet_653	rdfs:label	"Multiple endocrine neoplasia type 2"^^xsd:string .
+ns4:Orphanet_654	rdfs:label	"Nephroblastoma"^^xsd:string .
+ns4:Orphanet_71493	rdfs:label	"Familial thrombocytosis"^^xsd:string .
+ns4:Orphanet_790	rdfs:label	"Retinoblastoma"^^xsd:string .
+ns4:Orphanet_798	rdfs:label	"Schinzel-Giedion syndrome"^^xsd:string .
+ns4:Orphanet_805	rdfs:label	"Tuberous sclerosis"^^xsd:string .
+ns4:Orphanet_892	rdfs:label	"Von Hippel-Lindau disease"^^xsd:string .
+ns4:Orphanet_902	rdfs:label	"Werner syndrome"^^xsd:string .
+ns4:Orphanet_906	rdfs:label	"Wiskott-Aldrich syndrome"^^xsd:string .
+ns4:Orphanet_98274	rdfs:label	"Myeloproliferative neoplasm"^^xsd:string .
+ns4:Orphanet_99361	rdfs:label	"Familial medullary thyroid carcinoma"^^xsd:string .
+ns4:Orphanet_99818	rdfs:label	"Turcot syndrome with polyposis"^^xsd:string .
+ns4:Orphanet_99877	rdfs:label	"Familial parathyroid adenoma"^^xsd:string .
+ns4:Orphanet_99977	rdfs:label	"Esophageal squamous cell carcinoma"^^xsd:string .
+

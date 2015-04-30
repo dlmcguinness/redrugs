@@ -1,0 +1,69 @@
+prefix nanopub: <http://www.nanopub.org/nschema#>
+prefix sio: <http://semanticscience.org/resource/>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix fn: <http://www.w3.org/2005/xpath-functions#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+
+insert {
+  graph ?nanopub {
+    ?nanopub a nanopub:Nanopublication ;
+               nanopub:hasAssertion ?assertion ;
+               nanopub:hasProvenance ?provenance .
+ 
+       ?provenance nanopub:hasAttribution ?attribution ;
+                   nanopub:hasSupporting ?supporting .
+ 
+       ?assertion a nanopub:Assertion .
+       ?provenance a nanopub:Provenance .
+       ?attribution a nanopub:Attribution .
+       ?supporting a nanopub:Supporting .
+  }
+  graph ?assertion {
+    ?interaction a sio:causing ;
+                 sio:has-participant ?participant;
+                 sio:has-target ?target.
+    ?participant a ?partType.
+    ?partType rdfs:label ?partTypeLabel.
+    ?target a ?targetType.
+    ?targetType rdfs:label ?targetTypeLabel.
+    ?participant <http://redrugs.tw.rpi.edu/vocab/hasMutationType> ?mutationType.
+  }
+  graph ?attribution {
+    ?assertion prov:wasQuotedFrom <http://cancer.sanger.ac.uk/cancergenome/projects/census/>.
+    <http://cancer.sanger.ac.uk/cancergenome/projects/census/> rdfs:label "COSMIC Cancer Genome Census".
+  }
+  graph ?supporting {
+    ?assertion sio:SIO_000008 [
+      a sio:SIO_000765;
+      sio:SIO_000300 0.99
+    ]
+  }
+
+
+} where {
+  ?interaction a sio:causing ;
+               sio:has-participant ?participant;
+               sio:has-target ?target.
+  OPTIONAL {
+    ?participant <http://redrugs.tw.rpi.edu/vocab/hasMutationType> ?mutationType.
+  }
+  BIND(iri(fn:concat(?interaction,"/nanopub")) as ?nanopub)
+  BIND(iri(fn:concat(?interaction,"/nanopub/assertion")) as ?assertion)
+  BIND(iri(fn:concat(?interaction,"/nanopub/provenance")) as ?provenance)
+  BIND(iri(fn:concat(?interaction,"/nanopub/attribution")) as ?attribution)
+  BIND(iri(fn:concat(?interaction,"/nanopub/supporting")) as ?supporting)
+  OPTIONAL { 
+    ?participant a ?partType.
+  }
+  OPTIONAL { 
+    ?partType rdfs:label ?partTypeLabel.
+  }
+  OPTIONAL { 
+    ?target a ?targetType.
+  }
+  OPTIONAL { 
+    ?targetType rdfs:label ?targetTypeLabel.
+  }
+
+}
