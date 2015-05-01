@@ -705,7 +705,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         },$scope.graph,$scope.handleError);
         $scope.once = false;
         $scope.found = -1;
-        $scope.cy.layout($scope.layout);
     };
     // Adds elements to graph.
     $scope.appendToGraph = function(result) {
@@ -720,7 +719,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             },$scope.graph,$scope.handleError);
             $scope.once = true;
         }
-        $scope.cy.add(elements);
+        var eles = $scope.cy.add(elements);
         //$scope.pageRank = $scope.cy.elements().pageRank();
         //$scope.pageRank.ordinal = {};
         //var ranks = [];
@@ -746,6 +745,15 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $scope.currStep = 0;
     $scope.prevEle = [];
     $scope.traces = {};
+    $scope.completedTraces = []
+    $scope.jobQueue = {
+        upstream: [],
+        downstream: [],
+    };
+    $scope.queued = {
+        upstream: {},
+        downstream: {},
+    };
     $scope.getCustomResults = function(result, direction) {
         // console.log(result);
 
@@ -810,9 +818,17 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 link[$scope.ns.sio('has-target')][0] :
                 link[$scope.ns.sio('has-participant')][0];
 
+            if (near == far) return;
+
             elements[far.uri].data.stepCount = elements[near.uri].data.stepCount + 1;
             var prob = elements[near.uri].data.prob * elements[link.uri].data.probability;
             if (prob >= $scope.probThreshold) {
+                // Make sure we aren't overwriting a better path.
+                if ($scope.traces[far.uri]) {
+                    var oldTrace = $scope.traces[far.uri];
+                    if (oldTrace[oldTrace.length-1].data.prob > prob)
+                        return;
+                }
                 elements[far.uri].data.prob = prob;
                 var trace = [elements[near.uri]];
                 if ($scope.traces[near.uri] != null) {
@@ -823,7 +839,10 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 $scope.traces[far.uri] = trace;
                 var satisfies = checkConnection(elements[far.uri].data.types, elements[link.uri].data.types);
                 if (satisfies) { addToGraph.push(far); }
-                if (elements[far.uri].data.stepCount < $scope.numSearch) expand.push(far);
+                if (elements[far.uri].data.stepCount < $scope.numSearch && !$scope.queued[direction][far.uri]) {
+                    $scope.queued[direction][far.uri] = true;
+                    expand.push(far);
+                }
             }
         });
 
@@ -832,28 +851,37 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         addToGraph.forEach( function(element) {
             // console.log("adding trace",$scope.traces[element.data.uri]);
             resultElements = resultElements.concat($scope.traces[element.uri]);
+            $scope.completedTraces.push($scope.traces[element.uri].slice());
         });
 
-        $scope.cy.add(resultElements);
+        var eles = $scope.cy.add(resultElements);
 
         var service = $scope.services[direction];
         // Need to do another search on all other nodes and then look for matches 
         var toExpand = expand.slice();
-        while (toExpand.length > 0) {
-            var g = new $.Graph();
-            toExpand.splice(0,10).forEach(function(d) {
-                $scope.createResource(d.uri,g);
-            });
-            service(g, function(result) {
-                $scope.getCustomResults(result, direction);
-            }, $scope.graph, $scope.handleError);
+        var queue = $scope.jobQueue[direction];
+        queue.push.apply(queue, expand);
+        function submitService() {
+            if (queue.length > 0) {
+                var g = new $.Graph();
+                queue.splice(0,10).forEach(function(d) {
+                    $scope.createResource(d.uri,g);
+                });
+                service(g, function(result) {
+                    $scope.getCustomResults(result, direction);
+                }, new $.Graph(), function(data,status, headers, config){
+                    $scope.handleError(data,status, headers, config)
+                    submitService();
+                });
+            }
         }
-        if (expand.length == 0) {
-            $scope.$apply(function(){ $scope.loading = false; });
-        }
+        submitService();
         if (!$scope.showLabel) { $scope.cy.elements().addClass("hideLabel"); }
         $scope.cy.layout($scope.layout);
         $scope.loaded += resultElements.filter(function(d){ return d.group == 'edges'}).length;
+        if ($scope.jobQueue.upstream.length == 0 && $scope.jobQueue.downstream.length == 0) {
+            $scope.$apply(function(){ $scope.loading = false; });
+        }
     }
 
 
@@ -892,7 +920,6 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
             $("#results").removeClass("col-md-9");
             $("#results").addClass("col-md-12");
             $scope.cy.resize();
-            $scope.cy.layout($scope.layout);
         }
     });
     // Refresh
@@ -927,6 +954,64 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
     $("#bglight").click(function() {
         $('body').css("background", 'url("../img/agsquare_@2X.png")');
     });
+    $scope.downloadPNG = function() {
+        var a = document.createElement('a');
+        a.download = "redrugs.png";
+        var raw = atob($scope.cy.png({full:true, scale:4}).replace('data:image/png;base64,',''));
+
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+            uInt8Array[i] = raw.charCodeAt(i);
+        }
+        var blob = new Blob([uInt8Array], {type: "image/png"});
+        var url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = "redrugs.png";
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+    $scope.downloadJSON = function() {
+        var a = document.createElement('a');
+        a.download = "redrugs.json";
+
+        var blob = new Blob([JSON.stringify($scope.cy.json())], {type: "application/json"});
+        var url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+    $scope.downloadConnectivity = function() {
+        var a = document.createElement('a');
+        a.download = "redrugsConnectivity.csv";
+
+        var data = 'start,start label,end,end label,steps,joint p,search\n';
+        data += $scope.completedTraces.map(function(trace) {
+            var first = trace[0];
+            var last = trace[trace.length-1];
+            return [
+                first.data.uri,
+                '"' + first.data.label[0] + '"',
+                last.data.uri,
+                '"' + last.data.label[0] + '"',
+                (trace.length-1)/2,
+                trace.filter(function(d){ return d.group == 'edges'; })
+                    .map(function(d) { return d.data.probability; })
+                    .reduce(function(a,b){ return a * b;}),
+                '"https://scholar.google.com/scholar?q='+
+                    [first.data.label[0].replace(' ','+'),
+                     last.data.label[0].replace(' ','+')].join('+') + '"'
+            ].join(",");
+        }).join("\n");
+
+        var blob = new Blob([data], {type: "application/json"});
+        var url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
     // Find custom expansions
     $scope.runQuery = function(type, directions) {
         $scope.loaded = 0;
@@ -934,6 +1019,15 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         $scope.probThreshold = parseFloat($scope.probThreshold);
         if ($scope.numSearch < 0 || $scope.probThreshold < 0) { return; }
         $scope.traces = {};
+        $scope.completedTraces = [];
+        $scope.jobQueue = {
+            upstream: [],
+            downstream: []
+        };
+        $scope.queued = {
+            upstream: {},
+            downstream: {}
+        };
         $scope.cy.$('node:selected').nodes().each(function(i,d) {
             $scope.selectedEle = d.data('id');
             d.data().prob = 1;

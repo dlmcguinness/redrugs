@@ -99,6 +99,17 @@
                   <a id="bfs" title="Highlight Connections" data-ng-click="showBFS(getSelected('id'))" type="button" class="btn btn-small">
                     <i class="icon-eye-open"></i> 
                   </a>
+                  <div class="btn-group">
+                    <a title="Download" class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+                     <i class="fa fa-download"></i>
+                    <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a data-ng-click="downloadPNG()" href="#">Image (PNG)</a></li>
+                      <li><a data-ng-click="downloadJSON()" href="#">Network (JSON)</a></li>
+                      <li><a data-ng-click="downloadConnectivity()" href="#">Connectivity Report (CSV)</a></li>
+                    </ul>
+                  </div>
               </div>
               <div class="btn-group">
                   <a id="zoom-in" title="Zoom In" class="btn btn-small"><i class="fa fa-search-plus"></i> </a>
