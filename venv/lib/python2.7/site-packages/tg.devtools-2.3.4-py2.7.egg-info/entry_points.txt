@@ -1,0 +1,9 @@
+[gearbox.commands]
+quickstart = devtools.gearbox.quickstart:QuickstartCommand
+tgext = devtools.gearbox.tgext:MakeTGExtCommand
+
+[gearbox.project_commands]
+migrate = devtools.gearbox.alembic_migrate:MigrateCommand
+sqla-migrate = devtools.gearbox.sqlamigrate:MigrateCommand
+tgshell = devtools.gearbox.tgshell:ShellCommand
+

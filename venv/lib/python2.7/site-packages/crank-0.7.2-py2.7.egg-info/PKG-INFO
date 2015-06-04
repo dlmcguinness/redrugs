@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: crank
+Version: 0.7.2
+Summary: Generalization of dispatch mechanism for use across frameworks.
+Home-page: https://github.com/TurboGears/crank
+Author: Christopher Perkins
+Author-email: chris@percious.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python

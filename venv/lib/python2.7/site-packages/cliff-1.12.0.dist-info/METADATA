@@ -1,0 +1,44 @@
+Metadata-Version: 2.0
+Name: cliff
+Version: 1.12.0
+Summary: Command Line Interface Formulation Framework
+Home-page: https://launchpad.net/python-cliff
+Author: Doug Hellmann
+Author-email: doug.hellmann@dreamhost.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Intended Audience :: Developers
+Classifier: Environment :: Console
+Requires-Dist: pbr (>=0.6,!=0.7,<1.0)
+Requires-Dist: argparse
+Requires-Dist: cmd2 (>=0.6.7)
+Requires-Dist: PrettyTable (>=0.7,<0.8)
+Requires-Dist: pyparsing (>=2.0.1)
+Requires-Dist: six (>=1.9.0)
+Requires-Dist: stevedore (>=1.3.0)
+
+=======================================================
+ cliff -- Command Line Interface Formulation Framework
+=======================================================
+
+cliff is a framework for building command line programs. It uses
+`setuptools entry points`_ to provide subcommands, output formatters, and
+other extensions.
+
+.. _setuptools entry points: http://pythonhosted.org/setuptools/pkg_resources.html#convenience-api
+
+* Free software: Apache license
+* Documentation: http://docs.openstack.org/developer/cliff
+* Source: http://git.openstack.org/cgit/openstack/cliff
+* Bugs: https://bugs.launchpad.net/python-cliff
+
+
+

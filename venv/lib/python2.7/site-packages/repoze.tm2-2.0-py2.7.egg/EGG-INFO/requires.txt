@@ -1,0 +1,10 @@
+transaction
+
+[docs]
+transaction
+Sphinx
+
+[testing]
+transaction
+nose
+coverage

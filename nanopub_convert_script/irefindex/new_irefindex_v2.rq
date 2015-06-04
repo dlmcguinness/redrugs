@@ -1,0 +1,79 @@
+#--------------------------------------------------------------------------------------------
+# version 2.0
+# irefindex contains protein interactions coming from different datasets including: biogrid, 
+# hprd, mi, intact etc. So it's likely that one interaction has multiple sources (eg: an 
+# interaction is an instance of both <http://bio2rdf.org/mi:0915> and 
+# <http://bio2rdf.org/intact_vocabulary:Resource>). 
+#
+# "action is mi_code label"
+# looking at classes that are mi vocabularies (use a graph pattern)
+# - add sio:action predicate in assertion graph
+#############################################################################################
+
+PREFIX pav: <http://purl.org/pav/2.0/>
+prefix sio: <http://semanticscience.org/resource/>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+prefix nanopub: <http://www.nanopub.org/nschema#>
+
+insert{
+#	graph ?nanopub{
+#        ?nanopub a nanopub:Nanopublication .
+#        ?nanopub nanopub:hasAssertion ?assertion .
+#        ?nanopub nanopub:hasProvenance ?provenance .
+#        ?nanopub nanopub:hasPublicationInfo ?publicationInfo .
+#        ?provenance nanopub:hasAttribution ?attribution .
+#        ?assertion a nanopub:Assertion .
+#        ?provenance a nanopub:Provenance .
+#        ?publicationInfo a nanopub:publicationInfo .
+#        ?attribution a nanopub:Attribution .
+#	}
+	graph ?assertion{
+       ?interaction sio:has-participant ?interactor_a.
+#        ?interaction sio:has-target ?interactor_b.
+#        ?interaction sio:action ?interaction_type_label.
+#	       ?interactor_a a <http://semanticscience.org/resource/protein>.
+#        ?interactor_b a <http://semanticscience.org/resource/protein>.
+#        #?interaction <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?details.
+	}
+#	graph ?provenance{
+#        ?assertion prov:wasGeneratedBy [   
+#                    a prov:Activity, ?method;
+#                    rdfs:label ?method_label
+#                    ].
+#        ?assertion sio:SIO_000772 ?pubmed . 
+#	}
+#	graph ?attribution{
+#	       ?assertion prov:wasQuotedFrom <http://download.bio2rdf.org/current/irefindex/>.
+#	       <http://download.bio2rdf.org/current/irefindex/> rdfs:label "IrefIndex".
+#	}
+#	graph ?publicationInfo{
+#        ?nanopub pav:authoredBy <http://tw.rpi.edu/web/person/RuiYan> ;
+#                 pav:createdBy <http://tw.rpi.edu/web/person/RuiYan> ;
+#                 dcterms:created ?now ;
+#                 dcterms:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+#                 dcterms:rightsHolder <http://tw.rpi.edu> .
+#	}	
+}
+
+where {
+  graph <file:/home/rui/Desktop/interaction-interactor_a.nt> {
+     ?interaction <http://bio2rdf.org/irefindex_vocabulary:interactor_a> ?interactor_a.
+#     ?interaction <http://bio2rdf.org/irefindex_vocabulary:interactor_b> ?interactor_b.
+#     optional{
+#        ?interaction a ?interaction_type.
+#        ?interaction_type rdfs:label ?interaction_type_label.
+#        ?interaction <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?details.
+#        ?interaction <http://bio2rdf.org/irefindex_vocabulary:method> ?method.
+#        ?interaction <http://bio2rdf.org/irefindex_vocabulary:article> ?pubmed.
+#        ?method <http://www.w3.org/2000/01/rdf-schema#label> ?method_label.
+#     }  
+  }  	
+#  BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
+  BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
+#  BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
+#  BIND(iri(concat(str(?interaction),"/nanopub/publicationInfo")) as ?publicationInfo)
+#  BIND(iri(concat(str(?interaction),"/nanopub/attribution")) as ?attribution)
+#  BIND(NOW() as ?now)	
+}

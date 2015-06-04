@@ -1,0 +1,13 @@
+TurboGears2 >= 2.3.1
+pbr
+Genshi
+repoze.tm2 >= 1.0a5
+pylons
+webhelpers
+gearbox
+Werkzeug
+tw2.forms
+rdflib
+scipy
+numpy
+sadi

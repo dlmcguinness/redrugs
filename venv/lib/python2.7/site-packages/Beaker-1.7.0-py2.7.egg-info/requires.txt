@@ -1,0 +1,14 @@
+
+[crypto]
+pycryptopp>=0.5.12
+
+[pycrypto]
+pycrypto
+
+[testsuite]
+nose
+webtest
+Mock
+coverage
+pycrypto
+SQLALchemy
