@@ -1,0 +1,79 @@
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
+PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
+PREFIX np: <http://www.nanopub.org/nschema#>
+PREFIX pav: <http://purl.org/pav/2.0/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+
+INSERT {
+	GRAPH ?nanopub{
+		?nanopub a np:Nanopublication ;
+			np:hasAssertion ?assertion ;
+			np:hasProvenance ?provenance ;
+			np:hasPublicationInfo ?publicationInfo .
+
+		?assertion a np:Assertion .
+		?provenance a np:Provenance;
+		?attribution a np:Attribution .
+		?publicationInfo a np:publicationInfo .
+	}
+	graph ?assertion{
+		?interaction a dv:Target-Relation;
+			sio:has-agent  ?drug;
+			sio:has-target ?target_uniprot;
+			sio:realizes   ?action. 
+		?drug a sio:drug;
+			skos:prefLabel ?drug_label;
+			bv:uri ?drug_url.
+		?target_uniprot a sio:protein;
+			skos:prefLabel ?target_label;
+			skos:altLabel ?target_abbreviation;
+			bv:uri ?target_url.
+	}
+	graph ?provenance{
+		?assertion prov:wasGeneratedBy [
+			rdfs:label "Generation of SIO-compliant drugbank in nanopublication format";
+			a prov:Activity
+		].
+		?assertion sio:has-evidence ?reference . 
+		?assertion sio:has-source ?dataset .
+	}
+	
+	graph ?publicationInfo{
+		?nanopub pav:authoredBy <http://dumontierlab.com/people/micheldumontier> ;
+			dcterms:created ?now ;
+			pav:createdBy <http://dumontierlab.com/people/micheldumontier> ;
+			dcterms:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+			dcterms:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+	}
+}
+
+where {
+    ?interaction 
+		a dv:Target-Relation;
+		dv:drug ?drug;
+		dv:target ?target; 
+		void:inDataset ?dataset;
+    OPTIONAL {
+		?interaction dv:action ?action. 
+		?interaciton dv:reference ?reference .
+	}
+    ?drug dcterms:title ?drug_label;
+		bv:uri ?drug_url.
+    ?target dcterms:title ?target_label;
+		bv:uri ?target_url.
+    ?target dv:x-uniprot ?target_uniprot.
+    ?target dv:gene-name ?target_abbreviation.
+    
+    BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
+    BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
+    BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
+    BIND(iri(concat(str(?interaction),"/nanopub/attribution")) as ?attribution)
+    BIND(iri(concat(str(?interaction),"/nanopub/publicationInfo")) as ?publicationInfo)
+    BIND(NOW() as ?now)
+}
