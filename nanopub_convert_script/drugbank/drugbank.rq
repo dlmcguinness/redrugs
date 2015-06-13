@@ -1,6 +1,7 @@
-PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX dct: <http://purl.org/dc/terms/>
 PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
 PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
 PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
 PREFIX np: <http://www.nanopub.org/nschema#>
 PREFIX pav: <http://purl.org/pav/2.0/>
@@ -18,58 +19,63 @@ INSERT {
 			np:hasPublicationInfo ?publicationInfo .
 
 		?assertion a np:Assertion .
-		?provenance a np:Provenance;
+		?provenance a np:Provenance.
 		?attribution a np:Attribution .
 		?publicationInfo a np:publicationInfo .
 	}
-	graph ?assertion{
-		?interaction a dv:Target-Relation;
-			sio:has-agent  ?drug;
-			sio:has-target ?target_uniprot;
-			sio:realizes   ?action. 
+	GRAPH ?assertion{
+		?association a sio:Arc, sio:Chemical-Protein-Interaction, ?action;
+			skos:prefLabel ?association_title;
+			sio:source-vertex ?drug;
+			sio:target-vertex ?protein.
+			
 		?drug a sio:drug;
 			skos:prefLabel ?drug_label;
-			bv:uri ?drug_url.
-		?target_uniprot a sio:protein;
-			skos:prefLabel ?target_label;
-			skos:altLabel ?target_abbreviation;
-			bv:uri ?target_url.
+			skos:hiddenLabel ?drug_synonym;
+			skos:hiddenLabel ?drug_brand.
+		?protein a sio:protein;
+			skos:prefLabel ?target_gene_symbol;
+			skos:altLabel ?target_label;
+			skos:hiddenLabel ?target_synonym.
 	}
-	graph ?provenance{
-		?assertion prov:wasGeneratedBy [
-			rdfs:label "Generation of SIO-compliant drugbank in nanopublication format";
-			a prov:Activity
-		].
-		?assertion sio:has-evidence ?reference . 
-		?assertion sio:has-source ?dataset .
+	GRAPH ?provenance{
+		?assertion 
+			prov:wasQuotedFrom ?dataset;
+			sio:has-evidence ?reference . 
 	}
 	
-	graph ?publicationInfo{
+	GRAPH ?publicationInfo{
 		?nanopub pav:authoredBy <http://dumontierlab.com/people/micheldumontier> ;
-			dcterms:created ?now ;
+			dct:created ?now ;
 			pav:createdBy <http://dumontierlab.com/people/micheldumontier> ;
-			dcterms:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
-			dcterms:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+			dct:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+			dct:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
 	}
 }
 
-where {
+WHERE {
     ?interaction 
 		a dv:Target-Relation;
+		dct:title ?interaction_label;
 		dv:drug ?drug;
 		dv:target ?target; 
-		void:inDataset ?dataset;
-    OPTIONAL {
-		?interaction dv:action ?action. 
-		?interaciton dv:reference ?reference .
-	}
-    ?drug dcterms:title ?drug_label;
-		bv:uri ?drug_url.
-    ?target dcterms:title ?target_label;
-		bv:uri ?target_url.
+		void:inDataset ?dataset.
+
+    ?drug dct:title ?drug_label.
+    ?target dct:title ?target_label.
+	
     ?target dv:x-uniprot ?target_uniprot.
-    ?target dv:gene-name ?target_abbreviation.
-    
+	FILTER regex(str(?target_uniprot),"^http://bio2rdf.org/uniprot:P[0-9]+")
+	
+	OPTIONAL {?interaction dv:action ?action.}
+	OPTIONAL {?interaction dv:reference ?reference.}
+	OPTIONAL {?drug dv:synonym [ dct:title ?drug_synonym ].}
+	OPTIONAL {?drug dv:brand [ dct:title ?drug_brand ].}
+	OPTIONAL {?target dv:gene-name ?target_gene_symbol.}
+	OPTIONAL {?target dv:synonym ?target_synonym .}
+
+	BIND(concat(?drug_label," - ", ?target_gene_symbol, " association") AS ?association_title)
+	BIND(?target_uniprot AS ?protein)
     BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
     BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
     BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
