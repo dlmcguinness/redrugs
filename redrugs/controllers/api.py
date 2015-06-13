@@ -73,80 +73,85 @@ def confidenceVote(nums):
 downstreamQueryTemplate = NewTextTemplate('''
 PREFIX sio: <http://semanticscience.org/resource/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
-prefix go: <http://purl.org/obo/owl/GO#GO_>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
+SELECT distinct ?source ?sourceLabel ?sourceType ?target ?targetType ?targetLabel ?interaction ?interactionType ?interactionTypeLabel ?probability ?searchEntity ?searchTerm where {
   { let ( ?searchEntity := <${search}>)
-    let ( ?participant := <${search}> ) }
-  <${search}> rdfs:label ?searchTerm.
+    let ( ?source := <${search}> ) }
   graph ?assertion {
-    ?interaction sio:has-participant <${search}>.
-    ?interaction sio:has-target ?target.
+    ?interaction sio:source-vertex ?source. 
+    ?interaction sio:target-vertex ?target.
     ?interaction a ?interactionType.
   }
-  OPTIONAL { ?interactionType rdfs:label ?typeLabel. }
+  OPTIONAL { ?interactionType skos:prefLabel ?interactionTypeLabel. }
   OPTIONAL {
     ?assertion sio:SIO_000008 [
       a sio:SIO_000765;
       sio:SIO_000300 ?probability;
     ].
   }
-  OPTIONAL { <${search}> a ?participantType. }
+  OPTIONAL { ?source a ?sourceType. }
   OPTIONAL { ?target a ?targetType. }
   
-  ?target rdfs:label ?targetLabel.
-  <${search}> rdfs:label ?participantLabel.
+  ?target skos:prefLabel ?targetLabel.
+  ?source skos:prefLabel ?sourceLabel.
+  <${search}> skos:prefLabel ?searchTerm.
+  FILTER(?source = <${search}>).
+
 } LIMIT 10000''')
 
 upstreamQueryTemplate = NewTextTemplate('''
 PREFIX sio: <http://semanticscience.org/resource/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 prefix go: <http://purl.org/obo/owl/GO#GO_>
 
-SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
+SELECT distinct ?source ?sourceLabel ?sourceType ?target ?targetType ?targetLabel ?interaction ?interactionType ?interactionTypeLabel ?probability ?searchEntity ?searchTerm where {
   { let ( ?searchEntity := <${search}>)
     let ( ?target := <${search}> ) }
 {% end %}\
-  <${search}> rdfs:label ?searchTerm.
   graph ?assertion {
-    ?interaction sio:has-participant ?participant.
-    ?interaction sio:has-target <${search}>.
+    ?interaction sio:source-vertex ?source.
+    ?interaction sio:target-vertex ?target.
     ?interaction a ?interactionType.
   }
-  OPTIONAL { ?interactionType rdfs:label ?typeLabel. }
+  OPTIONAL { ?interactionType skos:prefLabel ?interactionTypeLabel. }
   OPTIONAL {
     ?assertion sio:SIO_000008 [
       a sio:SIO_000765;
       sio:SIO_000300 ?probability;
     ].
   }
-  OPTIONAL { ?participant a ?participantType. }
-  OPTIONAL { <${search}> a ?targetType. }
-  
-  <${search}> rdfs:label ?targetLabel.
-  ?participant rdfs:label ?participantLabel.
+  OPTIONAL { ?source a ?sourceType. }
+  OPTIONAL { ?target a ?targetType. }
+
+  ?source skos:prefLabel ?sourceLabel.
+  ?target skos:prefLabel ?targetLabel.
+  <${search}> skos:prefLabel ?searchTerm.  
+  FILTER(?target = <${search}>)
+
 } LIMIT 10000''')
 
 processAppendQueryTemplate = NewTextTemplate('''
 PREFIX sio: <http://semanticscience.org/resource/>
 PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 prefix go: <http://purl.org/obo/owl/GO#GO_>
 
-SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetType ?targetLabel ?targetType ?interaction ?interactionType ?typeLabel ?probability ?searchEntity ?searchTerm where {
+SELECT distinct ?source ?sourceLabel ?sourceType ?target ?targetType ?targetLabel ?targetType ?interaction ?interactionType ?interactionTypeLabel ?probability ?searchEntity ?searchTerm where {
   let ( 
-    ?searchEntity :=
-    <${search}>
+    ?searchEntity := <${search}>
   )
-  <${search}> rdfs:label ?searchTerm.
-  <${search}> sio:has-participant ?participant.
+  <${search}> skos:prefLabel ?searchTerm.
+  <${search}> sio:source-vertex ?source.
   
   graph ?assertion {
-    ?interaction sio:has-participant ?participant.
-    ?interaction sio:has-target ?target.
+    ?interaction sio:source-vertex ?source.
+    ?interaction sio:target-vertex ?target.
     ?interaction a ?interactionType.
   }
-  OPTIONAL { ?interactionType rdfs:label ?typeLabel. }
-  OPTIONAL { ?participant a ?participantType. }
+  OPTIONAL { ?interactionType skos:prefLabel ?interactionTypeLabel. }
+  OPTIONAL { ?source a ?sourceType. }
   OPTIONAL { ?target a ?targetType. }
   OPTIONAL {
     ?assertion sio:SIO_000008 [
@@ -155,8 +160,8 @@ SELECT distinct ?participant ?participantLabel ?participantType ?target ?targetT
     ].
   }
   
-  ?target rdfs:label ?targetLabel.
-  ?participant rdfs:label ?participantLabel.
+  ?target skos:prefLlabel ?targetLabel.
+  ?source skos:prefLabel ?sourceLabel.
 } LIMIT 10000''')
 
 def mergeByInteraction(edges):
@@ -177,20 +182,22 @@ def mergeByInteraction(edges):
     
     byInteraction = collections.defaultdict(list)
     for edge in edges:
-        byInteraction[(edge['participant'],edge['interaction'],edge['target'])].append(edge)
+        byInteraction[(edge['source'],edge['interaction'],edge['target'])].append(edge)
     result = map(mergeInteractions, byInteraction.values())
     return result
 
 def mergeByInteractionType(edges):
     def mergeInteractions(interactions):
         result = interactions[0]
+	#print result
         result['interactions'] = [i['interaction'] for i in interactions]
         result['likelihood'] = logLikelihood(result['probability'])
         return result
     
     byInteraction = collections.defaultdict(list)
     for edge in edges:
-        byInteraction[(edge['participant'],edge['interactionType'],edge['target'])].append(edge)
+	#print edge
+        byInteraction[(edge['source'],edge['interactionType'],edge['target'])].append(edge)
     result = map(mergeInteractions, byInteraction.values())
     return result
 
@@ -198,6 +205,7 @@ sio = rdflib.Namespace("http://semanticscience.org/resource/")
 prov = rdflib.Namespace("http://www.w3.org/ns/prov#")
 void = rdflib.Namespace("http://rdfs.org/ns/void#")
 pml = rdflib.Namespace("http://provenanceweb.org/ns/pml#")
+skos = rdflib.Namespace("http://www.w3.org/2004/02/skos/core#")
 
 class InteractionsService(sadi.Service):
     
@@ -208,17 +216,20 @@ class InteractionsService(sadi.Service):
             if 'interactionType' in i and i['interactionType']:
                 interaction.add(rdflib.RDF.type, rdflib.URIRef(i['interactionType']))
             for d in i['interactions']:
-                interaction.add(prov.wasDerivedFrom,rdflib.URIRef(d))
+                interaction.add(prov.wasQuotedFrom,rdflib.URIRef(d))
             target = o.graph.resource(i['target'])
             if 'targetType' in i and i['targetType']:
                 target.add(rdflib.RDF.type, rdflib.URIRef(i['targetType']))
-            target.add(rdflib.RDFS.label, rdflib.Literal(i['targetLabel']))
-            interaction.add(sio['has-target'],target.identifier)
-            participant = o.graph.resource(i['participant'])
-            if 'participantType' in i and i['participantType']:
-                participant.add(rdflib.RDF.type, rdflib.URIRef(i['participantType']))
-            participant.add(rdflib.RDFS.label, rdflib.Literal(i['participantLabel']))
-            interaction.add(sio['has-participant'],participant.identifier)
+            #target.add(rdflib.RDFS.label, rdflib.Literal(i['targetLabel']))
+            target.add(skos.prefLabel, rdflib.Literal(i['targetLabel']))
+            #interaction.add(sio['has-target'],target.identifier)
+            interaction.add(sio['target-vertex'],target.identifier)
+            source = o.graph.resource(i['source'])
+            if 'sourceType' in i and i['sourceType']:
+                source.add(rdflib.RDF.type, rdflib.URIRef(i['sourceType']))
+            source.add(skos.prefLabel, rdflib.Literal(i['sourceLabel']))
+            #source.add(rdflib.RDFS.label, rdflib.Literal(i['sourceLabel']))
+            interaction.add(sio['source-vertex'],source.identifier)
             interaction.add(sio['probability-value'], rdflib.Literal(i['probability']))
             interaction.add(sio.likelihood, rdflib.Literal(i['likelihood']))
             for t in i['provenance']:
@@ -239,7 +250,6 @@ class InteractionsService(sadi.Service):
         resultSet = model.graph.query(q)
         variables = [x.replace("?","") for x in resultSet.vars]
         edges.extend([dict([(variables[i],x[i]) for i  in range(len(x))]) for x in resultSet])
-        #print len(edges)
         edges = mergeByInteraction(edges)
         edges = mergeByInteractionType(edges)
         return edges
@@ -247,8 +257,8 @@ class InteractionsService(sadi.Service):
             
 class InteractionsInBiologicalProcessService(InteractionsService):
     label = "Find Interactions in a Biological Process"
-    serviceDescriptionText = 'Find interactions whose participants or targets also participate in the input process.'
-    comment = 'Find interactions whose participants or targets also participate in the input process.'
+    serviceDescriptionText = 'Find interactions whose source or target also participate in the input process.'
+    comment = 'Find interactions whose source or target also participate in the input process.'
     serviceNameText = "Find Interactions in a Biological Process"
     name = "process"
 
@@ -331,24 +341,28 @@ class TextSearchService(sadi.Service):
         answers = self.get_matches(i.value(prov.value))
         for a in answers:
             answer = o.graph.resource(a[1])
+            answer.add(skos.prefLabel, rdflib.Literal(rdflib.Literal(a[0])))
             answer.add(rdflib.RDFS.label, rdflib.Literal(rdflib.Literal(a[0])))
             answer.add(pml.answers,o.identifier)
             answer.add(rdflib.URIRef("http://semanticscience.org/resource/count"),rdflib.Literal(a[2]))
         #
-        #print answers
+        print answers
 
     #@lru
     def get_matches(self,search):
         query = '''prefix bd: <http://www.bigdata.com/rdf/search#>
             PREFIX sio: <http://semanticscience.org/resource/>
+	    PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 
-          select distinct ?o ?s ( count(?interaction) as ?interactions) where {{
+          select distinct ?o ?s (count(distinct ?interaction) as ?interactions) where {{
             ?o bd:search """{0}.*""" .
-            ?s rdfs:label ?o.
+            {{?s skos:prefLabel ?o.}}
+            UNION {{?s skos:altLabel ?o.}}
+            UNION {{?s skos:hiddenLabel ?o.}}
             ?o bd:relevance ?cosine .
-            {{?interaction sio:has-participant ?s.}}
+            {{?interaction sio:source-vertex ?s.}}
             UNION
-            {{?interaction sio:has-target ?s.}}
+            {{?interaction sio:target-vertex ?s.}}
 
             FILTER(isURI(?s))
           }} group by ?s ?o order by desc(?interactions) limit 20'''.format(search)
