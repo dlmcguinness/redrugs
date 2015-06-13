@@ -1,0 +1,80 @@
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
+PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
+PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
+PREFIX np: <http://www.nanopub.org/nschema#>
+PREFIX pav: <http://purl.org/pav/2.0/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+
+INSERT {
+	GRAPH ?nanopub{
+		?nanopub a np:Nanopublication;
+			np:hasAssertion ?assertion;
+			np:hasProvenance ?provenance;
+			np:hasPublicationInfo ?publicationInfo .
+		?assertion a np:Assertion .
+		?provenance a np:Provenance .
+		?publicationInfo a np:publicationInfo .
+	}
+	GRAPH ?assertion {
+  		?phenotype_map a sio:Arc, sio:Gene-Disease-Association;
+		   skos:prefLabel ?phenotype_map_label.
+		   sio:source-vertex ?gene ;
+		   sio:target-vertex ?phenotype .
+		
+		#info on phenotype
+		?phenotype a sio:Phenotype ;
+			skos:prefLabel ?phenotype_label.
+  
+		#info on gene/protein
+		?gene_uniprot a <http://bio2rdf.org/mi:0326>;
+  			skos:prefLabel ?gene_label.
+	}
+	GRAPH ?provenance {
+		?assertion 
+			prov:wasQuotedFrom ?dataset;
+			prov:wasGeneratedBy ?method;
+			sio:has-evidence ?pubmed .
+	}
+	GRAPH ?publicationInfo{
+		?nanopub pav:authoredBy <http://dumontierlab.com/people/micheldumontier> ;
+		pav:createdBy <http://dumontierlab.com/people/micheldumontier> ;
+		dct:created ?now ;
+		dct:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+		dct:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+	}
+}
+WHERE {
+	?phenotype ov:phenotype-map ?phenotype_map .
+
+  	?phenotype_map 
+		dct:title ?phenotype_map_label;
+    	ov:gene-symbol ?hgnc_symbol;
+		ov:mapping-method ?method .
+  	
+	#info on phenotype
+	?phenotype a ov:Phenotype;
+		dct:title ?phenotype_label ;
+		void:inDataset ?dataset.
+
+	#info on gene
+	?gene_omim 
+    	dct:title ?gene_label ;
+        ov:gene-symbol ?hgnc_symbol;
+		ov:x-uniprot ?gene_uniprot.
+
+	OPTIONAL {?phenotype ov:article ?pubmed. }
+	
+	BIND(?gene_uniprot AS ?gene)
+    BIND(iri(concat(str(?phenotype_map),"/nanopub")) as ?nanopub)
+    BIND(iri(concat(str(?phenotype_map),"/nanopub/assertion")) as ?assertion)
+    BIND(iri(concat(str(?phenotype_map),"/nanopub/provenance")) as ?provenance)
+    BIND(iri(concat(str(?phenotype_map),"/nanopub/attribution")) as ?attribution)
+    BIND(iri(concat(str(?phenotype_map),"/nanopub/publicationInfo")) as ?publicationInfo)
+    BIND(NOW() as ?now)
+}
