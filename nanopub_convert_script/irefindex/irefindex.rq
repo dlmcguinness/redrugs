@@ -1,0 +1,74 @@
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
+PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
+PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
+PREFIX np: <http://www.nanopub.org/nschema#>
+PREFIX pav: <http://purl.org/pav/2.0/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+
+INSERT {
+	GRAPH ?nanopub
+	{
+		?nanopub a np:Nanopublication ;
+			np:hasAssertion ?assertion ;
+			np:hasProvenance ?provenance ;
+			np:hasPublicationInfo ?publicationInfo .
+		?assertion a np:Assertion .
+		?provenance a np:Provenance .
+		?publicationInfo a np:PublicationInfo .
+	}
+	GRAPH ?assertion
+	{   
+		?interaction a sio:Arc, sio:Molecular-Interaction, ?interaction_type;
+			skos:prefLabel ?typelabel;
+			sio:source-vertex ?a;
+			sio:target-vertex ?b.
+		
+		?a a ?a_type .
+		?b a ?b_type .
+		?a_type skos:prefLabel ?a_type_title .
+		?b_type skos:prefLabel ?b_type_title .
+	}
+	GRAPH ?provenance
+	{
+		?assertion prov:wasQuotedFrom ?dataset;
+			prov:wasGeneratedBy ?method;
+			sio:has-evidence ?article .  
+	}
+	GRAPH ?publicationInfo{
+		?nanopub pav:authoredBy <http://dumontierlab.com/people/micheldumontier> ;
+		pav:createdBy <http://dumontierlab.com/people/micheldumontier> ;
+		dct:created ?now ;
+		dct:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+		dct:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+	}
+}
+
+WHERE {
+	?interaction a ?interaction_type;
+		dct:title ?interaction_label;
+		iv:interactor_a ?a;
+        iv:interactor_b ?b;
+		iv:method ?method;
+		void:inDataset ?dataset .
+
+    #FILTER(?interaction_type = iv:Pairwise-Interaction)
+	OPTIONAL {?interaction_type dct:title ?typelabel.}
+  	OPTIONAL {?interaction iv:article ?article .}
+	?a a ?a_type .
+	?b a ?b_type .
+	?a_type dct:title ?a_type_title.
+	?b_type dct:title ?b_type_title.
+	
+	BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
+    BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
+    BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
+    BIND(iri(concat(str(?interaction),"/nanopub/attribution")) as ?attribution)
+    BIND(iri(concat(str(?interaction),"/nanopub/publicationInfo")) as ?publicationInfo)
+    BIND(NOW() as ?now)
+}

@@ -1,0 +1,85 @@
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
+PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
+PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
+PREFIX np: <http://www.nanopub.org/nschema#>
+PREFIX pav: <http://purl.org/pav/2.0/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+
+INSERT {
+	GRAPH ?nanopub{
+		?nanopub a np:Nanopublication ;
+			np:hasAssertion ?assertion ;
+			np:hasProvenance ?provenance ;
+			np:hasPublicationInfo ?publicationInfo .
+
+		?assertion a np:Assertion .
+		?provenance a np:Provenance.
+		?attribution a np:Attribution .
+		?publicationInfo a np:publicationInfo .
+	}
+	GRAPH ?assertion{
+		?association a sio:Arc, sio:Chemical-Protein-Interaction, ?action;
+			skos:prefLabel ?association_title;
+			sio:source-vertex ?drug;
+			sio:target-vertex ?protein.
+			
+		?drug a sio:drug;
+			skos:prefLabel ?drug_label;
+			skos:hiddenLabel ?drug_synonym;
+			skos:hiddenLabel ?drug_brand.
+		?protein a sio:protein;
+			skos:prefLabel ?target_gene_symbol;
+			skos:altLabel ?target_label;
+			skos:hiddenLabel ?target_synonym.
+	}
+	GRAPH ?provenance{
+		?assertion 
+			prov:wasQuotedFrom ?dataset;
+			sio:has-evidence ?reference . 
+	}
+	
+	GRAPH ?publicationInfo{
+		?nanopub pav:authoredBy <http://dumontierlab.com/people/micheldumontier> ;
+			dct:created ?now ;
+			pav:createdBy <http://dumontierlab.com/people/micheldumontier> ;
+			dct:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+			dct:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+	}
+}
+
+WHERE {
+    ?interaction 
+		a dv:Target-Relation;
+		dct:title ?interaction_label;
+		dv:drug ?drug;
+		dv:target ?target; 
+		void:inDataset ?dataset.
+
+    ?drug dct:title ?drug_label.
+    ?target dct:title ?target_label.
+	
+    ?target dv:x-uniprot ?target_uniprot.
+	FILTER regex(str(?target_uniprot),"^http://bio2rdf.org/uniprot:P[0-9]+")
+	
+	OPTIONAL {?interaction dv:action ?action.}
+	OPTIONAL {?interaction dv:reference ?reference.}
+	OPTIONAL {?drug dv:synonym [ dct:title ?drug_synonym ].}
+	OPTIONAL {?drug dv:brand [ dct:title ?drug_brand ].}
+	OPTIONAL {?target dv:gene-name ?target_gene_symbol.}
+	OPTIONAL {?target dv:synonym ?target_synonym .}
+
+	BIND(concat(?drug_label," - ", ?target_gene_symbol, " association") AS ?association_title)
+	BIND(?target_uniprot AS ?protein)
+    BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
+    BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
+    BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
+    BIND(iri(concat(str(?interaction),"/nanopub/attribution")) as ?attribution)
+    BIND(iri(concat(str(?interaction),"/nanopub/publicationInfo")) as ?publicationInfo)
+    BIND(NOW() as ?now)
+}
