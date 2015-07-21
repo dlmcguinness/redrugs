@@ -83,7 +83,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                     }).filter(function(d) {
                         return d[$scope.ns.pml('answers')];
                     }).map(function(d) {
-                        var result = d[$scope.ns.rdfs('label')][0];
+                        var result = d[$scope.ns.skos('prefLabel')][0];
                         var j = d.uri.indexOf('/', 18) + 1;
                         var dbid = d.uri.substring(j);
                         result += " - " + dbid;
@@ -320,6 +320,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         prov: $.Namespace("http://www.w3.org/ns/prov#"),
         pml: $.Namespace("http://provenanceweb.org/ns/pml#"),
         sio: $.Namespace("http://semanticscience.org/resource/"),
+	skos: $.Namespace("http://www.w3.org/2004/02/skos/core#"),
         dcterms: $.Namespace("http://purl.org/dc/terms/"),
         local: $.Namespace("urn:redrugs:")
     };
@@ -635,8 +636,8 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 //position: { x: 0, y: 0}
             };
             // Remove all non-alphanumerical and replace space and underscore with hypen
-            node.data.id = res[$scope.ns.rdfs('label')][0].replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-');
-            node.data.label = res[$scope.ns.rdfs('label')];
+            node.data.id = res[$scope.ns.skos('prefLabel')][0].replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-');
+            node.data.label = res[$scope.ns.skos('prefLabel')];
             if (res[$scope.ns.rdf('type')]) res[$scope.ns.rdf('type')].forEach(function(d) {
                 node.data.types[d.uri] = true;
             });
@@ -811,12 +812,12 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         // Split elements in graph to relevant or non-relevant. 
         links.forEach(function(link) {
             var near = direction == 'downstream' ? 
-                link[$scope.ns.sio('has-participant')][0] :
-                link[$scope.ns.sio('has-target')][0];
+                link[$scope.ns.sio('source-vertex')][0] :
+                link[$scope.ns.sio('target-vertex')][0];
 
             var far = direction == 'downstream' ? 
-                link[$scope.ns.sio('has-target')][0] :
-                link[$scope.ns.sio('has-participant')][0];
+                link[$scope.ns.sio('target-vertex')][0] :
+                link[$scope.ns.sio('source-vertex')][0];
 
             if (near == far) return;
 
