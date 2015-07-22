@@ -1,0 +1,63 @@
+PREFIX dct: <http://purl.org/dc/terms/>
+PREFIX bv: <http://bio2rdf.org/bio2rdf_vocabulary:>
+PREFIX dv: <http://bio2rdf.org/drugbank_vocabulary:>
+PREFIX iv: <http://bio2rdf.org/irefindex_vocabulary:>
+PREFIX ov: <http://bio2rdf.org/omim_vocabulary:>
+PREFIX np: <http://www.nanopub.org/nschema#>
+PREFIX pav: <http://purl.org/pav/2.0/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX sio: <http://semanticscience.org/resource/>
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX kegg: <http://bio2rdf.org/kegg_vocabulary:>
+
+INSERT {
+	GRAPH ?nanopub {
+		?nanopub a np:Nanopublication ;
+			np:hasAssertion ?assertion ;
+			np:hasProvenance ?provenance ;
+			np:hasPublicationInfo ?publicationInfo .
+
+		?assertion a np:Assertion .
+		?provenance a np:Provenance.
+		?attribution a np:Attribution .
+		?publicationInfo a np:publicationInfo .
+	}
+	GRAPH ?assertion{
+		?pathwayrel a sio:Arc, sio:Pathway-Relation, ?relation_type; 
+			skos:prefLabel ?title;
+			sio:source-vertex ?s;
+			sio:target-vertex ?t;
+			sio:relation-type ?relation_type.
+		?relation_type a sio:Relation-Type.
+	}
+	GRAPH ?provenance{
+		?assertion prov:wasQuotedFrom <http://www.kegg.jp/>.
+			 
+	}
+	
+	GRAPH ?publicationInfo{
+		?nanopub pav:authoredBy <http://dumontierlab.com/people/hansmeetsingh>;
+			dct:created ?now ;
+			pav:createdBy <http://dumontierlab.com/people/hansmeetsingh> ;
+			dct:rights <http://opendatacommons.org/licenses/odbl/1.0/> ; 
+			dct:rightsHolder <http://dumontierlab.com/people/micheldumontier> .
+	}
+}
+
+WHERE {
+	?pathwayrel a kegg:Pathway-Relation;
+		dct:title ?title;
+		kegg:source ?s;
+		kegg:target ?t;
+	    kegg:relation-type ?relation_type.
+	?relation_type a kegg:Relation-Type.
+
+	BIND(iri(concat(str(?interaction),"/nanopub")) as ?nanopub)
+    BIND(iri(concat(str(?interaction),"/nanopub/assertion")) as ?assertion)
+    BIND(iri(concat(str(?interaction),"/nanopub/provenance")) as ?provenance)
+    BIND(iri(concat(str(?interaction),"/nanopub/attribution")) as ?attribution)
+    BIND(iri(concat(str(?interaction),"/nanopub/publicationInfo")) as ?publicationInfo)
+	BIND(NOW() as ?now)
+}
