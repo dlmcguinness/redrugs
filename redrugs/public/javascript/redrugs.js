@@ -658,13 +658,13 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
         })
             // For this list of resources, filter for edges who has a target
             .filter(function(d) {
-                return d[$scope.ns.sio('has-target')];
+                return d[$scope.ns.sio('target-vertex')];
             })
 
             // For those filtered entities, apply the following
             .forEach(function(d) {
-                var s = d[$scope.ns.sio('has-participant')][0];
-                var t = d[$scope.ns.sio('has-target')][0];
+                var s = d[$scope.ns.sio('source-vertex')][0];
+                var t = d[$scope.ns.sio('target-vertex')][0];
                 var source = $scope.getNode(s);
                 var target = $scope.getNode(t);
                 elements.push(source);
@@ -674,7 +674,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 var edge = {
                     group: "edges",
                     data: $().extend({}, d, {
-                        id: d[$scope.ns.prov('wasDerivedFrom')][0].uri,
+                        id: d[$scope.ns.prov('wasQuotedFrom')][0].uri,
                         source: source.data.id,
                         target: target.data.id, 
                         shape: $scope.getEdgeFeature("shape", edgeTypes[0].uri), 
@@ -684,7 +684,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                         zscore: d[$scope.ns.sio('likelihood')][0],  // z-score-value
                         width: (d[$scope.ns.sio('likelihood')][0] * 4) + 1,
                         data: d[$scope.ns.prov('data')],
-                        prov: d[$scope.ns.prov('wasDerivedFrom')],
+                        prov: d[$scope.ns.prov('wasFrom')],
                         resource: d
                     })
                 };
@@ -763,7 +763,7 @@ redrugsApp.controller('ReDrugSCtrl', function ReDrugSCtrl($scope, $http) {
                 return result.getResource(d);
             })
             .filter(function(d) {
-                return d[$scope.ns.sio('has-target')];
+                return d[$scope.ns.sio('target-vertex')];
             });
 
         // Source, target, edge

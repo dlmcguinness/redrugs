@@ -7,7 +7,7 @@ import rdflib.graph
 #endpoints = [
 #endpoint = "http://redrugs.tw.rpi.edu/bigdata/sparql"
 #endpoint = "http://drugbank.bio2rdf.org/sparql"
-endpoint = "http://localhost:8080/bigdata/sparql"
+endpoint = "http://localhost:9999/bigdata/sparql"
 #    ]
 #graphs = []
 #for endpoint in endpoints:
